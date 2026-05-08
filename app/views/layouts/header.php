@@ -10,8 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Outfit', sans-serif; }
+        .swal2-popup { border-radius: 32px !important; font-family: 'Outfit', sans-serif !important; }
     </style>
 </head>
 <body class="bg-[#F5F7FB] min-h-screen text-[#1E1E2D] <?= isset($_SESSION['user']) ? 'flex' : ''; ?>" x-data="{ minimized: false }">
@@ -66,13 +69,23 @@
                      :class="minimized ? 'w-12 left-1/2 -translate-x-1/2' : 'w-full left-0'"
                      class="absolute bottom-full mb-4 bg-gray-50 rounded-3xl p-1.5 space-y-1 shadow-inner border border-gray-100 flex flex-col items-center">
                     
+                    <?php if ($_SESSION['user']['role'] === 'admin') : ?>
                     <a href="<?= BASEURL; ?>/device" 
-                       class="flex items-center rounded-2xl transition-all <?= $data['title'] == 'Devices' || $data['title'] == 'Add Device' || $data['title'] == 'Edit Device' ? 'bg-white text-[#5B5FEF] shadow-sm' : 'text-gray-500 hover:bg-white hover:text-[#5B5FEF]'; ?>"
+                       class="flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device']) ? 'bg-white text-[#5B5FEF] shadow-sm' : 'text-gray-500 hover:bg-white hover:text-[#5B5FEF]'; ?>"
                        :class="minimized ? 'p-3 justify-center' : 'px-4 py-3 gap-4 w-full'"
                        :title="minimized ? 'Devices' : ''">
                         <i class='bx bxs-devices text-xl min-w-[24px] flex items-center justify-center'></i>
                         <span x-show="!minimized" class="font-semibold">Devices</span>
                     </a>
+
+                    <a href="<?= BASEURL; ?>/user" 
+                       class="flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['User Management', 'Add User', 'Edit User']) ? 'bg-white text-[#5B5FEF] shadow-sm' : 'text-gray-500 hover:bg-white hover:text-[#5B5FEF]'; ?>"
+                       :class="minimized ? 'p-3 justify-center' : 'px-4 py-3 gap-4 w-full'"
+                       :title="minimized ? 'Users' : ''">
+                        <i class='bx bxs-group text-xl min-w-[24px] flex items-center justify-center'></i>
+                        <span x-show="!minimized" class="font-semibold">Users</span>
+                    </a>
+                    <?php endif; ?>
                     
                     <a href="<?= BASEURL; ?>/profile" 
                        class="flex items-center rounded-2xl transition-all <?= $data['title'] == 'My Account' ? 'bg-white text-[#5B5FEF] shadow-sm' : 'text-gray-500 hover:bg-white hover:text-[#5B5FEF]'; ?>"
@@ -85,7 +98,7 @@
 
                 <!-- Main Settings Button -->
                 <button @click="settingsOpen = !settingsOpen" 
-                        class="w-full flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device', 'My Account']) ? 'bg-[#5B5FEF] text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'; ?>"
+                        class="w-full flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device', 'User Management', 'Add User', 'Edit User', 'My Account']) ? 'bg-[#5B5FEF] text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'; ?>"
                         :class="minimized ? 'p-4 justify-center' : 'px-4 py-3 justify-between'">
                     <div class="flex items-center gap-4">
                         <i class='bx bxs-cog text-xl min-w-[24px]'></i>

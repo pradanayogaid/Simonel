@@ -37,6 +37,11 @@ class User {
         return $this->db->resultSet();
     }
 
+    public function getOnlyStandardUsers() {
+        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE role = "user" ORDER BY name ASC');
+        return $this->db->resultSet();
+    }
+
     public function updateUser($data) {
         $query = "UPDATE " . $this->table . " SET name = :name, email = :email, role = :role WHERE id = :id";
         $this->db->query($query);

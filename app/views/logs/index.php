@@ -5,13 +5,13 @@
             <p class="text-gray-500">Log aktivitas sensor dari seluruh perangkat</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="window.location.reload()" class="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-gray-500 hover:text-[#5B5FEF] transition-all">
+            <button onclick="window.location.href='<?= BASEURL; ?>/log'" class="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-gray-500 hover:text-[#5B5FEF] transition-all">
                 <i class='bx bx-refresh text-xl'></i>
             </button>
-            <div class="relative">
-                <input type="text" placeholder="Cari log..." class="pl-10 pr-4 py-3 bg-white rounded-2xl shadow-sm border border-gray-100 focus:outline-none focus:border-[#5B5FEF] transition-all">
+            <form action="<?= BASEURL; ?>/log" method="GET" class="relative">
+                <input type="text" name="search" placeholder="Cari log..." value="<?= $data['search'] ?? ''; ?>" class="pl-10 pr-4 py-3 bg-white rounded-2xl shadow-sm border border-gray-100 focus:outline-none focus:border-[#5B5FEF] transition-all">
                 <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400'></i>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -25,9 +25,9 @@
                         <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Perangkat</th>
                         <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tegangan (V)</th>
                         <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Arus (A)</th>
-                        <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daya (W)</th>
-                        <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">PF</th>
-                        <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Energi (kWh)</th>
+                        <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daya Nyata (W)</th>
+                        <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daya Semu (VA)</th>
+                        <th class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daya Reaktif (VAR)</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -63,13 +63,13 @@
                                 <span class="text-sm font-bold text-gray-700"><?= number_format($log['current'], 2); ?></span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm font-bold text-[#5B5FEF]"><?= number_format($log['power'], 1); ?></span>
+                                <span class="text-sm font-bold text-[#5B5FEF]"><?= number_format($log['daya_nyata'], 1); ?></span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="px-2 py-1 bg-gray-100 rounded text-[10px] font-black text-gray-500"><?= number_format($log['pf'], 2); ?></span>
+                                <span class="text-sm font-bold text-indigo-400"><?= number_format($log['daya_semu'], 1); ?></span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm font-bold text-orange-500"><?= number_format($log['energy'], 3); ?></span>
+                                <span class="text-sm font-bold text-gray-500"><?= number_format($log['daya_reaktif'], 1); ?></span>
                             </td>
                         </tr>
                         <?php endforeach; ?>

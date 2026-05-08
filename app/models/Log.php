@@ -10,29 +10,17 @@ class Log {
 
     public function addLog($data) {
         $query = "INSERT INTO " . $this->table . " 
-                  (device_id, voltage, current, power, apparent_power, reactive_power, energy, frequency, pf) 
+                  (device_id, voltage, current, daya_semu, daya_nyata, daya_reaktif) 
                   VALUES 
-                  (:device_id, :voltage, :current, :power, :apparent_power, :reactive_power, :energy, :frequency, :pf)";
+                  (:device_id, :voltage, :current, :daya_semu, :daya_nyata, :daya_reaktif)";
                   
         $this->db->query($query);
         $this->db->bind(':device_id', $data['device_id']);
         $this->db->bind(':voltage', $data['voltage']);
         $this->db->bind(':current', $data['current']);
-        $this->db->bind(':power', $data['power']);
-        
-        $apparent = $data['apparent_power'] ?? ($data['voltage'] * $data['current']);
-        $this->db->bind(':apparent_power', $apparent); 
-        
-        // Calculate reactive power if not provided (VAR = sqrt(VA^2 - W^2))
-        $reactive = $data['reactive_power'] ?? 0;
-        if (!isset($data['reactive_power']) && $apparent >= $data['power']) {
-            $reactive = sqrt(pow($apparent, 2) - pow($data['power'], 2));
-        }
-        $this->db->bind(':reactive_power', $reactive);
-        
-        $this->db->bind(':energy', $data['energy']);
-        $this->db->bind(':frequency', $data['frequency']);
-        $this->db->bind(':pf', $data['pf']);
+        $this->db->bind(':daya_semu', $data['daya_semu']);
+        $this->db->bind(':daya_nyata', $data['daya_nyata']); 
+        $this->db->bind(':daya_reaktif', $data['daya_reaktif'] ?? 0);
         
         $this->db->execute();
         return $this->db->rowCount();
@@ -49,9 +37,9 @@ class Log {
         $query = "SELECT 
                     AVG(voltage) as avg_voltage, MIN(voltage) as min_voltage, MAX(voltage) as max_voltage,
                     AVG(current) as avg_current, MIN(current) as min_current, MAX(current) as max_current,
-                    AVG(power) as avg_power, MIN(power) as min_power, MAX(power) as max_power,
-                    AVG(apparent_power) as avg_apparent_power, MIN(apparent_power) as min_apparent_power, MAX(apparent_power) as max_apparent_power,
-                    AVG(reactive_power) as avg_reactive_power, MIN(reactive_power) as min_reactive_power, MAX(reactive_power) as max_reactive_power
+                    AVG(daya_semu) as avg_daya_semu, MIN(daya_semu) as min_daya_semu, MAX(daya_semu) as max_daya_semu,
+                    AVG(daya_nyata) as avg_daya_nyata, MIN(daya_nyata) as min_daya_nyata, MAX(daya_nyata) as max_daya_nyata,
+                    AVG(daya_reaktif) as avg_daya_reaktif, MIN(daya_reaktif) as min_daya_reaktif, MAX(daya_reaktif) as max_daya_reaktif
                   FROM " . $this->table . " 
                   WHERE device_id = :device_id AND DATE(created_at) = CURDATE()";
         
@@ -63,39 +51,62 @@ class Log {
         return $stats ?: [
             'avg_voltage' => 0, 'min_voltage' => 0, 'max_voltage' => 0,
             'avg_current' => 0, 'min_current' => 0, 'max_current' => 0,
-            'avg_power' => 0, 'min_power' => 0, 'max_power' => 0,
-            'avg_apparent_power' => 0, 'min_apparent_power' => 0, 'max_apparent_power' => 0,
-            'avg_reactive_power' => 0, 'min_reactive_power' => 0, 'max_reactive_power' => 0
+            'avg_daya_semu' => 0, 'min_daya_semu' => 0, 'max_daya_semu' => 0,
+            'avg_daya_nyata' => 0, 'min_daya_nyata' => 0, 'max_daya_nyata' => 0,
+            'avg_daya_reaktif' => 0, 'min_daya_reaktif' => 0, 'max_daya_reaktif' => 0
         ];
     }
 
     public function getTotalPower() {
-        // Sum of latest power from each unique device
-        $query = "SELECT SUM(power) as total_power 
-                  FROM (SELECT power FROM " . $this->table . " 
+        // Sum of latest Daya Nyata (W)
+        $query = "SELECT SUM(daya_nyata) as total_power 
+                  FROM (SELECT daya_nyata FROM " . $this->table . " 
                         WHERE id IN (SELECT MAX(id) FROM " . $this->table . " GROUP BY device_id)) as latest_logs";
         $this->db->query($query);
         return $this->db->single()['total_power'] ?? 0;
     }
 
-    public function getEnergyToday() {
-        // Sum of energy consumption for today
-        // Since energy is usually cumulative, we take MAX - MIN for each device today
-        $query = "SELECT SUM(energy_today) as total_energy 
-                  FROM (SELECT (MAX(energy) - MIN(energy)) as energy_today 
-                        FROM " . $this->table . " 
-                        WHERE DATE(created_at) = CURDATE() 
-                        GROUP BY device_id) as daily_energy";
+    public function getTotalApparentPower() {
+        // Sum of latest Daya Semu (VA)
+        $query = "SELECT SUM(daya_semu) as total_power 
+                  FROM (SELECT daya_semu FROM " . $this->table . " 
+                        WHERE id IN (SELECT MAX(id) FROM " . $this->table . " GROUP BY device_id)) as latest_logs";
         $this->db->query($query);
-        return $this->db->single()['total_energy'] ?? 0;
+        return $this->db->single()['total_power'] ?? 0;
     }
 
-    public function getAllLogs($limit = 100) {
-        $this->db->query('SELECT ' . $this->table . '.*, devices.device_name 
-                          FROM ' . $this->table . ' 
-                          JOIN devices ON ' . $this->table . '.device_id = devices.device_code 
-                          ORDER BY created_at DESC LIMIT :limit');
+    public function getAllLogs($limit = 100, $search = null) {
+        $sql = 'SELECT ' . $this->table . '.*, devices.device_name 
+                FROM ' . $this->table . ' 
+                JOIN devices ON ' . $this->table . '.device_id = devices.device_code';
+        
+        if ($search) {
+            $sql .= ' WHERE devices.device_name LIKE :search 
+                      OR ' . $this->table . '.device_id LIKE :search';
+        }
+        
+        $sql .= ' ORDER BY created_at DESC LIMIT :limit';
+        
+        $this->db->query($sql);
+        if ($search) {
+            $this->db->bind(':search', "%$search%");
+        }
         $this->db->bind(':limit', $limit);
+        return $this->db->resultSet();
+    }
+
+    public function getWeeklyConsumption() {
+        // Get daily average of Daya Nyata (W) for the last 7 days
+        $query = "SELECT date, SUM(daily_avg_power) as total_energy 
+                  FROM (
+                      SELECT DATE(created_at) as date, AVG(daya_nyata) as daily_avg_power 
+                      FROM " . $this->table . " 
+                      WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) 
+                      GROUP BY DATE(created_at), device_id
+                  ) as daily_stats 
+                  GROUP BY date 
+                  ORDER BY date ASC";
+        $this->db->query($query);
         return $this->db->resultSet();
     }
 }

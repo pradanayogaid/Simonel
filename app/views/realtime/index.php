@@ -134,7 +134,7 @@
                 <div>
                     <p class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Daya Semu</p>
                     <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black text-gray-800" x-text="sensorData.apparent_power">0.0</h3>
+                        <h3 class="text-4xl font-black text-gray-800" x-text="sensorData.daya_semu">0.0</h3>
                         <span class="text-gray-500 font-bold">VA</span>
                     </div>
                 </div>
@@ -145,15 +145,15 @@
             <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-gray-50">
                 <div class="text-center">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">AVG</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.apparent_power?.avg || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_semu?.avg || '0.0'"></span></p>
                 </div>
                 <div class="text-center border-l border-r border-gray-50">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">Min</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.apparent_power?.min || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_semu?.min || '0.0'"></span></p>
                 </div>
                 <div class="text-center">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">Max</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.apparent_power?.max || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_semu?.max || '0.0'"></span></p>
                 </div>
             </div>
         </div>
@@ -164,7 +164,7 @@
                 <div>
                     <p class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Daya Reaktif</p>
                     <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black text-gray-800" x-text="sensorData.reactive_power">0.0</h3>
+                        <h3 class="text-4xl font-black text-gray-800" x-text="sensorData.daya_reaktif">0.0</h3>
                         <span class="text-gray-500 font-bold">VAR</span>
                     </div>
                 </div>
@@ -175,15 +175,15 @@
             <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-gray-50">
                 <div class="text-center">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">AVG</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.reactive_power?.avg || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_reaktif?.avg || '0.0'"></span></p>
                 </div>
                 <div class="text-center border-l border-r border-gray-50">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">Min</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.reactive_power?.min || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_reaktif?.min || '0.0'"></span></p>
                 </div>
                 <div class="text-center">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">Max</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.reactive_power?.max || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_reaktif?.max || '0.0'"></span></p>
                 </div>
             </div>
         </div>
@@ -194,7 +194,7 @@
                 <div>
                     <p class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Daya Nyata</p>
                     <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black text-gray-800" x-text="sensorData.power">0.0</h3>
+                        <h3 class="text-4xl font-black text-gray-800" x-text="sensorData.daya_nyata">0.0</h3>
                         <span class="text-gray-500 font-bold">W</span>
                     </div>
                 </div>
@@ -205,15 +205,15 @@
             <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-gray-50">
                 <div class="text-center">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">AVG</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.power?.avg || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_nyata?.avg || '0.0'"></span></p>
                 </div>
                 <div class="text-center border-l border-r border-gray-50">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">Min</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.power?.min || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_nyata?.min || '0.0'"></span></p>
                 </div>
                 <div class="text-center">
                     <p class="text-[10px] text-gray-400 font-bold uppercase">Max</p>
-                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.power?.max || '0.0'"></span></p>
+                    <p class="text-sm font-bold text-gray-700 mt-1"><span x-text="sensorStats.daya_nyata?.max || '0.0'"></span></p>
                 </div>
             </div>
         </div>
@@ -245,16 +245,16 @@
                 sensorData: {
                     voltage: 0,
                     current: 0,
-                    power: 0,
-                    apparent_power: 0,
-                    reactive_power: 0
+                    daya_nyata: 0,
+                    daya_semu: 0,
+                    daya_reaktif: 0
                 },
                 sensorStats: {
                     voltage: { avg: 0, min: 0, max: 0 },
                     current: { avg: 0, min: 0, max: 0 },
-                    power: { avg: 0, min: 0, max: 0 },
-                    apparent_power: { avg: 0, min: 0, max: 0 },
-                    reactive_power: { avg: 0, min: 0, max: 0 }
+                    daya_nyata: { avg: 0, min: 0, max: 0 },
+                    daya_semu: { avg: 0, min: 0, max: 0 },
+                    daya_reaktif: { avg: 0, min: 0, max: 0 }
                 },
                 init() {
                     this.initChart();
@@ -361,7 +361,7 @@
                             this.lastUpdate = date.toLocaleTimeString([], { hour12: false }) + ' (' + date.toLocaleDateString() + ')';
                             
                             // Update Chart
-                            this.updateChart(result.data.power, result.data.last_update);
+                            this.updateChart(result.data.daya_nyata, result.data.last_update);
                         } else {
                             this.isConnected = false;
                         }

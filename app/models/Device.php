@@ -74,4 +74,19 @@ class Device {
         $this->db->bind(':status', $status);
         return $this->db->single()['total'];
     }
+
+    public function getDevicesWithLatestLog() {
+        $query = "SELECT d.*, l.voltage, l.current, l.daya_nyata, l.created_at as last_data 
+                  FROM " . $this->table . " d 
+                  LEFT JOIN (
+                      SELECT * FROM sensor_logs 
+                      WHERE id IN (SELECT MAX(id) FROM sensor_logs GROUP BY device_id)
+                  ) l ON d.device_code = l.device_id 
+                  ORDER BY d.status DESC, d.device_name ASC";
+        $this->db->query($query);
+        return $this->db->resultSet();
+    }
+    public function generateApiKey() {
+        return bin2hex(random_bytes(16));
+    }
 }

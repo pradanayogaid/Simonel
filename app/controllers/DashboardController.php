@@ -20,8 +20,12 @@ class DashboardController extends Controller {
             'total_devices' => $deviceModel->countDevices(),
             'online_devices' => $deviceModel->getStatusCount('ONLINE'),
             'total_power' => $logModel->getTotalPower(),
-            'total_energy_today' => $logModel->getEnergyToday()
+            'total_power_apparent' => $logModel->getTotalApparentPower()
         ];
+
+        // New data for enhanced dashboard
+        $data['devices'] = $deviceModel->getDevicesWithLatestLog();
+        $data['weekly_consumption'] = $logModel->getWeeklyConsumption();
 
         $this->view('layouts/header', $data);
         $this->view('dashboard/index', $data);

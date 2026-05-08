@@ -11,7 +11,7 @@
     </div>
     
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <!-- Total Devices -->
         <div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all">
             <div class="flex justify-between items-center mb-4">
@@ -43,41 +43,134 @@
             </div>
         </div>
 
-        <!-- Total Power -->
+        <!-- Total Power (Daya Nyata) -->
         <div class="bg-[#5B5FEF] rounded-[32px] p-6 shadow-lg shadow-indigo-100 relative overflow-hidden group">
             <div class="relative z-10">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                         <i class='bx bxs-bolt'></i>
                     </div>
-                    <span class="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Daya Total</span>
+                    <span class="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Daya Nyata Total</span>
                 </div>
                 <div>
                     <div class="flex items-baseline gap-1">
                         <h3 class="text-3xl font-black text-white"><?= number_format($data['stats']['total_power'], 1); ?></h3>
                         <span class="text-indigo-100 font-bold text-sm">W</span>
                     </div>
-                    <p class="text-xs text-indigo-100 mt-1">Beban Saat Ini</p>
+                    <p class="text-xs text-indigo-100 mt-1">Beban Aktif Saat Ini</p>
                 </div>
             </div>
             <i class='bx bxs-zap absolute -bottom-4 -right-4 text-7xl text-white/10'></i>
         </div>
+    </div>
 
-        <!-- Energy Today -->
-        <div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                    <i class='bx bxs-leaf'></i>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <!-- Energy Trend Chart -->
+        <div class="lg:col-span-2 bg-white rounded-[40px] p-8 shadow-sm border border-gray-50">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">Tren Konsumsi Energi</h2>
+                    <p class="text-sm text-gray-400">7 hari terakhir (kWh)</p>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Energi Hari Ini</span>
-            </div>
-            <div>
-                <div class="flex items-baseline gap-1">
-                    <h3 class="text-3xl font-black text-gray-800"><?= number_format($data['stats']['total_energy_today'], 2); ?></h3>
-                    <span class="text-gray-400 font-bold text-sm">kWh</span>
+                <div class="flex gap-2">
+                    <span class="w-3 h-3 rounded-full bg-[#5B5FEF]"></span>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Total Konsumsi</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">Konsumsi Akumulatif</p>
             </div>
+            <div class="h-[300px] w-full">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Quick Stats / Cost Estimation -->
+        <div class="bg-white rounded-[40px] p-8 shadow-sm border border-gray-50 flex flex-col">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Estimasi Hari Ini</h2>
+            <div class="space-y-6 flex-1">
+                <div class="p-5 bg-gray-50 rounded-3xl">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Daya Semu Total</p>
+                    <div class="flex items-baseline gap-1">
+                        <h4 class="text-2xl font-black text-gray-800"><?= number_format($data['stats']['total_power_apparent'] ?? 0, 1); ?></h4>
+                        <span class="text-sm font-bold text-gray-400">VA</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1">Total beban semu sistem</p>
+                </div>
+                
+                <div class="p-5 bg-indigo-50/50 rounded-3xl">
+                    <p class="text-xs font-bold text-[#5B5FEF] uppercase tracking-widest mb-1">Efisiensi Sistem</p>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-[#5B5FEF]" style="width: 92%"></div>
+                        </div>
+                        <span class="text-sm font-black text-[#5B5FEF]">92%</span>
+                    </div>
+                </div>
+
+                <div class="p-5 border border-dashed border-gray-200 rounded-3xl">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Beban Puncak</p>
+                    <div class="flex items-baseline gap-1">
+                        <h4 class="text-xl font-black text-gray-700"><?= number_format($data['stats']['total_power'] * 1.2, 1); ?></h4>
+                        <span class="text-sm font-bold text-gray-400">W</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Status List -->
+    <div class="bg-white rounded-[40px] shadow-sm border border-gray-50 overflow-hidden mb-10">
+        <div class="p-8 border-b border-gray-50 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800">Status Perangkat</h2>
+            <?php if ($_SESSION['user']['role'] === 'admin') : ?>
+            <a href="<?= BASEURL; ?>/device" class="text-sm font-bold text-[#5B5FEF] hover:underline">Lihat Semua</a>
+            <?php endif; ?>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50/50">
+                        <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Perangkat</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lokasi</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Beban (W)</th>
+                        <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Update Terakhir</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <?php foreach ($data['devices'] as $device) : ?>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl <?= $device['status'] == 'ONLINE' ? 'bg-indigo-50 text-[#5B5FEF]' : 'bg-gray-100 text-gray-400'; ?> flex items-center justify-center text-xl">
+                                    <i class='bx bxs-microchip'></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-gray-700"><?= htmlspecialchars($device['device_name']); ?></div>
+                                    <div class="text-[10px] text-gray-400 font-bold uppercase"><?= htmlspecialchars($device['device_code']); ?></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-1 text-sm text-gray-500 font-medium">
+                                <i class='bx bx-map-pin text-gray-300'></i>
+                                <?= htmlspecialchars($device['location']); ?>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $device['status'] == 'ONLINE' ? 'bg-green-50 text-green-500' : 'bg-gray-100 text-gray-400'; ?>">
+                                <span class="w-1.5 h-1.5 rounded-full <?= $device['status'] == 'ONLINE' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'; ?>"></span>
+                                <?= $device['status']; ?>
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 text-sm font-bold text-gray-700">
+                            <?= $device['daya_nyata'] ? number_format($device['daya_nyata'], 1) . ' W' : '-'; ?>
+                        </td>
+                        <td class="px-8 py-5 text-xs text-gray-400 font-medium">
+                            <?= $device['last_data'] ? date('H:i, d M', strtotime($device['last_data'])) : 'No Data'; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -96,3 +189,66 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        
+        // Data dari PHP
+        const weeklyData = <?= json_encode($data['weekly_consumption']); ?>;
+        const labels = weeklyData.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+        });
+        const values = weeklyData.map(item => item.total_energy);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Konsumsi (kWh)',
+                    data: values,
+                    backgroundColor: '#5B5FEF',
+                    borderRadius: 12,
+                    hoverBackgroundColor: '#4A4ED9',
+                    barThickness: 32
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1E1E2D',
+                        padding: 12,
+                        titleFont: { size: 12, family: "'Outfit', sans-serif" },
+                        bodyFont: { size: 14, weight: 'bold', family: "'Outfit', sans-serif" },
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toFixed(2) + ' kWh';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f3f4f6', drawBorder: false },
+                        ticks: { 
+                            font: { family: "'Outfit', sans-serif" },
+                            color: '#9ca3af',
+                            callback: function(value) { return value + ' kWh'; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { family: "'Outfit', sans-serif" }, color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+    });
+</script>

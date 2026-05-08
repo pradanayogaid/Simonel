@@ -6,6 +6,12 @@ class DeviceController extends Controller {
             header('Location: ' . BASEURL . '/auth');
             exit;
         }
+        
+        // Role check: Only admin can access device settings
+        if ($_SESSION['user']['role'] !== 'admin') {
+            header('Location: ' . BASEURL . '/dashboard');
+            exit;
+        }
     }
 
     public function index() {
