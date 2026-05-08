@@ -1,4 +1,5 @@
 # SIMONEL — Sistem Monitoring Panel
+Dasboard Monitoring Panel PLTS On Grid
 
 SIMONEL adalah aplikasi dashboard monitoring berbasis IoT untuk memantau data panel listrik secara realtime. Aplikasi ini dibangun menggunakan Native PHP dengan arsitektur MVC, Tailwind CSS, dan Alpine.js.
 
@@ -22,7 +23,7 @@ SIMONEL adalah aplikasi dashboard monitoring berbasis IoT untuk memantau data pa
 
 1. Clone repository ini:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/pradanayogaid/Simonel.git
    ```
 2. Impor database `simonel.sql` ke MySQL Anda.
 3. Salin file konfigurasi:
