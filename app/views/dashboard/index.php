@@ -173,21 +173,6 @@
             </table>
         </div>
     </div>
-
-    <!-- Info Section -->
-    <div class="bg-white rounded-[40px] p-8 shadow-sm border border-gray-50 flex flex-col md:flex-row items-center gap-8">
-        <div class="w-24 h-24 rounded-3xl bg-indigo-50 flex items-center justify-center text-4xl text-[#5B5FEF] shrink-0">
-            <i class='bx bxs-rocket'></i>
-        </div>
-        <div class="flex-1 text-center md:text-left">
-            <h2 class="text-xl font-bold mb-2">Phase 1 Berhasil Diluncurkan!</h2>
-            <p class="text-gray-500 leading-relaxed">Sistem Autentikasi, Manajemen Perangkat, dan API Receiver telah aktif sepenuhnya. Anda sekarang dapat mulai memantau data secara realtime melalui menu Realtime.</p>
-            <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-3">
-                <a href="<?= BASEURL; ?>/realtime" class="px-6 py-2.5 bg-[#5B5FEF] text-white rounded-full font-bold text-sm hover:shadow-lg transition-all">Mulai Monitoring</a>
-                <a href="<?= BASEURL; ?>/device" class="px-6 py-2.5 bg-gray-50 text-gray-600 rounded-full font-bold text-sm hover:bg-gray-100 transition-all">Kelola Perangkat</a>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

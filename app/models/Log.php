@@ -27,13 +27,26 @@ class Log {
     }
 
     public function getLatestLog($device_code) {
-        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE device_id = :device_id ORDER BY created_at DESC LIMIT 1');
+        // Only return latest data if it's within the last 24 hours
+        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE device_id = :device_id AND created_at >= NOW() - INTERVAL 24 HOUR ORDER BY created_at DESC LIMIT 1');
         $this->db->bind(':device_id', $device_code);
         return $this->db->single();
     }
 
-    public function getDailyStats($device_code) {
-        // We get average, min, max for today
+    public function getLatestLogByDate($device_code, $date) {
+        // Return the most recent log for a specific date
+        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE device_id = :device_id AND DATE(created_at) = :date ORDER BY created_at DESC LIMIT 1');
+        $this->db->bind(':device_id', $device_code);
+        $this->db->bind(':date', $date);
+        return $this->db->single();
+    }
+
+    public function getDailyStats($device_code, $date = null) {
+        // Get average, min, max — filtered by specific date or last 24 hours
+        $dateFilter = $date 
+            ? "DATE(created_at) = :date" 
+            : "created_at >= NOW() - INTERVAL 24 HOUR";
+
         $query = "SELECT 
                     AVG(voltage) as avg_voltage, MIN(voltage) as min_voltage, MAX(voltage) as max_voltage,
                     AVG(current) as avg_current, MIN(current) as min_current, MAX(current) as max_current,
@@ -41,13 +54,14 @@ class Log {
                     AVG(daya_nyata) as avg_daya_nyata, MIN(daya_nyata) as min_daya_nyata, MAX(daya_nyata) as max_daya_nyata,
                     AVG(daya_reaktif) as avg_daya_reaktif, MIN(daya_reaktif) as min_daya_reaktif, MAX(daya_reaktif) as max_daya_reaktif
                   FROM " . $this->table . " 
-                  WHERE device_id = :device_id AND DATE(created_at) = CURDATE()";
+                  WHERE device_id = :device_id AND " . $dateFilter;
         
         $this->db->query($query);
         $this->db->bind(':device_id', $device_code);
+        if ($date) $this->db->bind(':date', $date);
         $stats = $this->db->single();
         
-        // Return 0 if no data today
+        // Return 0 if no data
         return $stats ?: [
             'avg_voltage' => 0, 'min_voltage' => 0, 'max_voltage' => 0,
             'avg_current' => 0, 'min_current' => 0, 'max_current' => 0,
@@ -55,6 +69,36 @@ class Log {
             'avg_daya_nyata' => 0, 'min_daya_nyata' => 0, 'max_daya_nyata' => 0,
             'avg_daya_reaktif' => 0, 'min_daya_reaktif' => 0, 'max_daya_reaktif' => 0
         ];
+    }
+
+    public function getChartHistory($device_code, $limit = 60, $date = null) {
+        // If date given, fetch all records for that day; otherwise last 24h
+        if ($date) {
+            $query = "SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
+                      FROM " . $this->table . "
+                      WHERE device_id = :device_id AND DATE(created_at) = :date
+                      ORDER BY created_at ASC
+                      LIMIT :limit";
+            $this->db->query($query);
+            $this->db->bind(':device_id', $device_code);
+            $this->db->bind(':date', $date);
+            $this->db->bind(':limit', $limit);
+        } else {
+            // Default: last 24 hours, newest-first limited, then ordered ascending
+            $query = "SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
+                      FROM (
+                          SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
+                          FROM " . $this->table . "
+                          WHERE device_id = :device_id AND created_at >= NOW() - INTERVAL 24 HOUR
+                          ORDER BY created_at DESC
+                          LIMIT :limit
+                      ) sub
+                      ORDER BY created_at ASC";
+            $this->db->query($query);
+            $this->db->bind(':device_id', $device_code);
+            $this->db->bind(':limit', $limit);
+        }
+        return $this->db->resultSet();
     }
 
     public function getTotalPower() {
@@ -107,6 +151,20 @@ class Log {
                   GROUP BY date 
                   ORDER BY date ASC";
         $this->db->query($query);
+        return $this->db->resultSet();
+    }
+
+    public function getLogsByDateRange($device_code, $date_from, $date_to) {
+        $query = "SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
+                  FROM " . $this->table . "
+                  WHERE device_id = :device_id
+                    AND DATE(created_at) >= :date_from
+                    AND DATE(created_at) <= :date_to
+                  ORDER BY created_at ASC";
+        $this->db->query($query);
+        $this->db->bind(':device_id', $device_code);
+        $this->db->bind(':date_from', $date_from);
+        $this->db->bind(':date_to', $date_to);
         return $this->db->resultSet();
     }
 }

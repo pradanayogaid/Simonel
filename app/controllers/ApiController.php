@@ -83,7 +83,27 @@ class ApiController extends Controller {
         $stats = $logModel->getDailyStats($device['device_code']);
 
         if (!$latestLog) {
-            echo json_encode(['status' => 'success', 'message' => 'No data found for this device', 'data' => null]);
+            // No data within 24 hours — return zeroed values
+            echo json_encode([
+                'status' => 'success',
+                'device_code' => $device['device_code'],
+                'device_status' => 'OFFLINE',
+                'data' => [
+                    'voltage'      => 0,
+                    'current'      => 0,
+                    'daya_nyata'   => 0,
+                    'daya_semu'    => 0,
+                    'daya_reaktif' => 0,
+                    'last_update'  => null
+                ],
+                'stats' => [
+                    'voltage'      => ['avg' => 0, 'min' => 0, 'max' => 0],
+                    'current'      => ['avg' => 0, 'min' => 0, 'max' => 0],
+                    'daya_nyata'   => ['avg' => 0, 'min' => 0, 'max' => 0],
+                    'daya_semu'    => ['avg' => 0, 'min' => 0, 'max' => 0],
+                    'daya_reaktif' => ['avg' => 0, 'min' => 0, 'max' => 0],
+                ]
+            ]);
             return;
         }
 
@@ -98,7 +118,7 @@ class ApiController extends Controller {
                 'daya_nyata' => $latestLog['daya_nyata'],
                 'daya_semu' => $latestLog['daya_semu'],
                 'daya_reaktif' => $latestLog['daya_reaktif'],
-                'last_update' => $latestLog['created_at']
+                'last_update' => $latestLog['created_at'] ? date('c', strtotime($latestLog['created_at'])) : null
             ],
             'stats' => [
                 'voltage' => ['avg' => round($stats['avg_voltage'], 2), 'min' => round($stats['min_voltage'], 2), 'max' => round($stats['max_voltage'], 2)],
@@ -107,6 +127,83 @@ class ApiController extends Controller {
                 'daya_semu' => ['avg' => round($stats['avg_daya_semu'], 2), 'min' => round($stats['min_daya_semu'], 2), 'max' => round($stats['max_daya_semu'], 2)],
                 'daya_reaktif' => ['avg' => round($stats['avg_daya_reaktif'], 2), 'min' => round($stats['min_daya_reaktif'], 2), 'max' => round($stats['max_daya_reaktif'], 2)]
             ]
+        ]);
+    }
+    public function history() {
+        $api_key = $_GET['api_key'] ?? '';
+
+        if (empty($api_key)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'API Key is required']);
+            return;
+        }
+
+        $deviceModel = $this->model('Device');
+        $device = $deviceModel->getDeviceByApiKey($api_key);
+
+        if (!$device) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Invalid API Key']);
+            return;
+        }
+
+        $logModel = $this->model('Log');
+
+        // Optional date filter: ?date=YYYY-MM-DD
+        $date = $_GET['date'] ?? null;
+        if ($date && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $date = null; // ignore invalid format
+        }
+
+        $history = $logModel->getChartHistory($device['device_code'], 300, $date);
+        $stats   = $logModel->getDailyStats($device['device_code'], $date);
+
+        // Get latest log for the selected period
+        $latestLog = $date
+            ? $logModel->getLatestLogByDate($device['device_code'], $date)
+            : $logModel->getLatestLog($device['device_code']);
+
+        // Format for Chart.js: arrays of labels and values per metric
+        $labels      = [];
+        $voltage     = [];
+        $current     = [];
+        $daya_nyata  = [];
+        $daya_semu   = [];
+        $daya_reaktif = [];
+
+        foreach ($history as $row) {
+            $labels[]       = date('c', strtotime($row['created_at']));
+            $voltage[]      = (float) $row['voltage'];
+            $current[]      = (float) $row['current'];
+            $daya_nyata[]   = (float) $row['daya_nyata'];
+            $daya_semu[]    = (float) $row['daya_semu'];
+            $daya_reaktif[] = (float) $row['daya_reaktif'];
+        }
+
+        echo json_encode([
+            'status'      => 'success',
+            'labels'      => $labels,
+            'voltage'     => $voltage,
+            'current'     => $current,
+            'daya_nyata'  => $daya_nyata,
+            'daya_semu'   => $daya_semu,
+            'daya_reaktif' => $daya_reaktif,
+            // Latest values for the selected period
+            'latest' => $latestLog ? [
+                'voltage'      => (float) $latestLog['voltage'],
+                'current'      => (float) $latestLog['current'],
+                'daya_nyata'   => (float) $latestLog['daya_nyata'],
+                'daya_semu'    => (float) $latestLog['daya_semu'],
+                'daya_reaktif' => (float) $latestLog['daya_reaktif'],
+            ] : null,
+            // Stats for the selected period
+            'stats' => [
+                'voltage'     => ['avg' => round($stats['avg_voltage'], 2),     'min' => round($stats['min_voltage'], 2),     'max' => round($stats['max_voltage'], 2)],
+                'current'     => ['avg' => round($stats['avg_current'], 2),     'min' => round($stats['min_current'], 2),     'max' => round($stats['max_current'], 2)],
+                'daya_nyata'  => ['avg' => round($stats['avg_daya_nyata'], 2),  'min' => round($stats['min_daya_nyata'], 2),  'max' => round($stats['max_daya_nyata'], 2)],
+                'daya_semu'   => ['avg' => round($stats['avg_daya_semu'], 2),   'min' => round($stats['min_daya_semu'], 2),   'max' => round($stats['max_daya_semu'], 2)],
+                'daya_reaktif' => ['avg' => round($stats['avg_daya_reaktif'], 2), 'min' => round($stats['min_daya_reaktif'], 2), 'max' => round($stats['max_daya_reaktif'], 2)],
+            ],
         ]);
     }
 }

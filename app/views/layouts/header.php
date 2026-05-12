@@ -48,6 +48,22 @@
                 <i class='bx bxs-bar-chart-alt-2 text-xl min-w-[24px]'></i>
                 <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Realtime</span>
             </a>
+
+            <?php if ($_SESSION['user']['role'] === 'admin') : ?>
+            <a href="<?= BASEURL; ?>/device" 
+               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device']) ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               :title="minimized ? 'Devices' : ''">
+                <i class='bx bxs-devices text-xl min-w-[24px]'></i>
+                <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Devices</span>
+            </a>
+            <?php endif; ?>
+
+            <a href="<?= BASEURL; ?>/export" 
+               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= $data['title'] == 'Export' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               :title="minimized ? 'Export' : ''">
+                <i class='bx bxs-cloud-download text-xl min-w-[24px]'></i>
+                <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Export</span>
+            </a>
             
             <a href="<?= BASEURL; ?>/log" 
                class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= $data['title'] == 'Logs' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
@@ -70,14 +86,6 @@
                      class="absolute bottom-full mb-4 bg-gray-50 rounded-3xl p-1.5 space-y-1 shadow-inner border border-gray-100 flex flex-col items-center">
                     
                     <?php if ($_SESSION['user']['role'] === 'admin') : ?>
-                    <a href="<?= BASEURL; ?>/device" 
-                       class="flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device']) ? 'bg-white text-[#5B5FEF] shadow-sm' : 'text-gray-500 hover:bg-white hover:text-[#5B5FEF]'; ?>"
-                       :class="minimized ? 'p-3 justify-center' : 'px-4 py-3 gap-4 w-full'"
-                       :title="minimized ? 'Devices' : ''">
-                        <i class='bx bxs-devices text-xl min-w-[24px] flex items-center justify-center'></i>
-                        <span x-show="!minimized" class="font-semibold">Devices</span>
-                    </a>
-
                     <a href="<?= BASEURL; ?>/user" 
                        class="flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['User Management', 'Add User', 'Edit User']) ? 'bg-white text-[#5B5FEF] shadow-sm' : 'text-gray-500 hover:bg-white hover:text-[#5B5FEF]'; ?>"
                        :class="minimized ? 'p-3 justify-center' : 'px-4 py-3 gap-4 w-full'"
@@ -98,7 +106,7 @@
 
                 <!-- Main Settings Button -->
                 <button @click="settingsOpen = !settingsOpen" 
-                        class="w-full flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device', 'User Management', 'Add User', 'Edit User', 'My Account']) ? 'bg-[#5B5FEF] text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'; ?>"
+                        class="w-full flex items-center rounded-2xl transition-all <?= in_array($data['title'], ['User Management', 'Add User', 'Edit User', 'My Account']) ? 'bg-[#5B5FEF] text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'; ?>"
                         :class="minimized ? 'p-4 justify-center' : 'px-4 py-3 justify-between'">
                     <div class="flex items-center gap-4">
                         <i class='bx bxs-cog text-xl min-w-[24px]'></i>
@@ -111,5 +119,5 @@
     </aside>
 
     <!-- Main Content wrapper -->
-    <main class="flex-1 h-screen overflow-y-auto">
+    <main class="flex-1 h-screen overflow-y-auto flex flex-col">
 <?php endif; ?>

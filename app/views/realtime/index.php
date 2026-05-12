@@ -54,13 +54,29 @@
     <?php else : ?>
 
     <!-- Status & Connection info -->
-    <div class="flex items-center gap-4 mb-6">
-        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-sm font-bold" :class="isConnected ? 'text-green-500' : 'text-red-500'">
-            <div class="w-2.5 h-2.5 rounded-full" :class="isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></div>
-            <span x-text="isConnected ? 'ONLINE' : 'OFFLINE'"></span>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-sm font-bold" :class="isConnected ? 'text-green-500' : 'text-red-500'">
+                <div class="w-2.5 h-2.5 rounded-full" :class="isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></div>
+                <span x-text="isConnected ? 'ONLINE' : 'OFFLINE'"></span>
+            </div>
+            <div class="text-sm text-gray-400 font-medium">
+                Updated : <span x-text="lastUpdate">Menunggu data...</span>
+            </div>
         </div>
-        <div class="text-sm text-gray-400 font-medium">
-            Pembaruan terakhir: <span x-text="lastUpdate">Menunggu data...</span>
+        <div class="flex items-center gap-2">
+            <input type="date"
+                   id="chartDatePicker"
+                   x-model="selectedDate"
+                   @change="onDateChange()"
+                   :max="todayDate"
+                   class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-2xl px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B5FEF]/30 focus:border-[#5B5FEF] transition-all cursor-pointer">
+            <button @click="resetToLive()"
+                    x-show="selectedDate"
+                    class="flex items-center gap-1.5 px-4 py-2 bg-indigo-50 text-[#5B5FEF] text-sm font-bold rounded-2xl hover:bg-indigo-100 transition-all">
+                <i class='bx bx-revision'></i>
+                Live
+            </button>
         </div>
     </div>
 
@@ -220,20 +236,47 @@
 
     </div>
 
-    <!-- Power Chart -->
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mt-8 mb-8">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-gray-800">Tren Penggunaan Daya Nyata</h2>
-            <div class="flex gap-2">
-                <span class="px-3 py-1 bg-indigo-50 text-[#5B5FEF] text-xs font-bold rounded-lg">Realtime</span>
+
+    <!-- Realtime Charts Grid -->
+    <div class="grid grid-cols-1 gap-6 mb-10">
+        <?php 
+        $charts = [
+            ['id' => 'voltage', 'title' => 'Tegangan (Voltage)', 'unit' => 'V AC', 'color' => '#5B5FEF'],
+            ['id' => 'current', 'title' => 'Arus (Current)', 'unit' => 'A', 'color' => '#F59E0B'],
+            ['id' => 'daya_nyata', 'title' => 'Daya Nyata (Active Power)', 'unit' => 'W', 'color' => '#10B981'],
+            ['id' => 'daya_semu', 'title' => 'Daya Semu (Apparent Power)', 'unit' => 'VA', 'color' => '#8B5CF6'],
+            ['id' => 'daya_reaktif', 'title' => 'Daya Reaktif (Reactive Power)', 'unit' => 'VAR', 'color' => '#06B6D4'],
+        ];
+        foreach ($charts as $c) : ?>
+        <div x-data="{ open: true }" class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 group transition-all">
+            <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white" style="background-color: <?= $c['color']; ?>">
+                        <i class='bx bx-line-chart text-xl'></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800">Tren <?= $c['title']; ?></h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 bg-gray-50 text-gray-400 text-[10px] font-bold rounded-lg uppercase tracking-widest">Realtime</span>
+                    <i class='bx text-2xl text-gray-300 transition-transform duration-300' :class="open ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
+                </div>
+            </div>
+            
+            <div :style="open ? 'max-height: 400px; overflow: visible;' : 'max-height: 0; overflow: hidden;'"
+                 style="transition: max-height 0.3s ease; max-height: 400px; overflow: visible;"
+                 class="mt-6">
+                <div class="relative h-72 w-full">
+                    <canvas id="<?= $c['id']; ?>Chart"></canvas>
+                </div>
             </div>
         </div>
-        <div class="relative h-72 w-full">
-            <canvas id="powerChart"></canvas>
-        </div>
+        <?php endforeach; ?>
     </div>
 
     <script>
+        // Store charts outside Alpine to prevent reactivity recursion
+        window._chartInstances = {};
+
         function realtimeMonitor() {
             return {
                 apiKey: '<?= $data["selected_device"]["api_key"]; ?>',
@@ -241,7 +284,6 @@
                 isConnected: false,
                 lastUpdate: '-',
                 pollingInterval: null,
-                chartInstance: null,
                 sensorData: {
                     voltage: 0,
                     current: 0,
@@ -256,93 +298,180 @@
                     daya_semu: { avg: 0, min: 0, max: 0 },
                     daya_reaktif: { avg: 0, min: 0, max: 0 }
                 },
+                selectedDate: '',
+                todayDate: new Date().toISOString().split('T')[0],
                 init() {
-                    this.initChart();
-                    this.fetchData();
-                    // Poll every 2 seconds
-                    this.pollingInterval = setInterval(() => {
+                    this.$nextTick(() => {
+                        this.initCharts();
+                        this.loadHistory();
                         this.fetchData();
-                    }, 2000);
-                },
-                initChart() {
-                    const ctx = document.getElementById('powerChart').getContext('2d');
-                    
-                    // Create gradient
-                    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                    gradient.addColorStop(0, 'rgba(91, 95, 239, 0.2)');
-                    gradient.addColorStop(1, 'rgba(91, 95, 239, 0)');
-
-                    this.chartInstance = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: [],
-                            datasets: [{
-                                label: 'Active Power (W)',
-                                data: [],
-                                borderColor: '#5B5FEF',
-                                backgroundColor: gradient,
-                                borderWidth: 3,
-                                pointBackgroundColor: '#fff',
-                                pointBorderColor: '#5B5FEF',
-                                pointBorderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                fill: true,
-                                tension: 0.4 // Smooth curves
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0,0,0,0.8)',
-                                    padding: 12,
-                                    titleFont: { size: 13, family: "'Inter', sans-serif" },
-                                    bodyFont: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
-                                    displayColors: false,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.parsed.y + ' W';
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: '#f3f4f6', drawBorder: false },
-                                    ticks: { font: { family: "'Inter', sans-serif" }, color: '#9ca3af' }
-                                },
-                                x: {
-                                    grid: { display: false, drawBorder: false },
-                                    ticks: { font: { family: "'Inter', sans-serif" }, color: '#9ca3af' }
-                                }
-                            },
-                            animation: { duration: 0 } // Disable animation for snappy realtime updates
-                        }
+                        // Poll every 5 seconds
+                        this.pollingInterval = setInterval(() => {
+                            this.fetchData();
+                        }, 5000);
                     });
                 },
-                updateChart(powerValue, timestamp) {
-                    if (!this.chartInstance) return;
-                    
-                    const timeLabel = new Date(timestamp).toLocaleTimeString([], { hour12: false });
-                    const data = this.chartInstance.data.datasets[0].data;
-                    const labels = this.chartInstance.data.labels;
-                    
-                    // Only push if time is different (avoid duplicating same data if polling is faster than data arrival)
-                    if (labels.length === 0 || labels[labels.length - 1] !== timeLabel) {
-                        labels.push(timeLabel);
-                        data.push(powerValue);
-                        
-                        // Keep last 15 data points
-                        if (labels.length > 15) {
-                            labels.shift();
-                            data.shift();
+                async loadHistory(date = null) {
+                    try {
+                        const dateParam = date ? `&date=${date}` : '';
+                        const response = await fetch(`<?= BASEURL; ?>/api/history?api_key=${this.apiKey}${dateParam}`);
+                        const result = await response.json();
+                        if (result.status !== 'success' || !result.labels || result.labels.length === 0) {
+                            // Clear charts when no data
+                            ['voltage', 'current', 'daya_nyata', 'daya_semu', 'daya_reaktif'].forEach(metric => {
+                                const chart = window._chartInstances[metric];
+                                if (!chart) return;
+                                chart.data.labels = [];
+                                chart.data.datasets[0].data = [];
+                                chart.update();
+                            });
+                            // Also zero out cards
+                            this.sensorData = { voltage: 0, current: 0, daya_nyata: 0, daya_semu: 0, daya_reaktif: 0 };
+                            this.sensorStats = {
+                                voltage: { avg: 0, min: 0, max: 0 },
+                                current: { avg: 0, min: 0, max: 0 },
+                                daya_nyata: { avg: 0, min: 0, max: 0 },
+                                daya_semu: { avg: 0, min: 0, max: 0 },
+                                daya_reaktif: { avg: 0, min: 0, max: 0 }
+                            };
+                            return;
                         }
-                        this.chartInstance.update();
+
+                        const metrics = ['voltage', 'current', 'daya_nyata', 'daya_semu', 'daya_reaktif'];
+                        const labels = result.labels.map(ts => new Date(ts).toLocaleTimeString([], { hour12: false }));
+
+                        metrics.forEach(metric => {
+                            const chart = window._chartInstances[metric];
+                            if (!chart) return;
+                            chart.data.labels = [...labels];
+                            chart.data.datasets[0].data = [...result[metric]];
+                            chart.update();
+                        });
+
+                        // Update metric cards from history response
+                        if (result.latest) {
+                            this.sensorData = result.latest;
+                        }
+                        if (result.stats) {
+                            this.sensorStats = result.stats;
+                        }
+                    } catch (e) {
+                        console.warn('History load failed:', e);
                     }
+                },
+                onDateChange() {
+                    if (this.pollingInterval) {
+                        clearInterval(this.pollingInterval);
+                        this.pollingInterval = null;
+                    }
+                    this.loadHistory(this.selectedDate);
+                },
+                resetToLive() {
+                    this.selectedDate = '';
+                    this.loadHistory();
+                    if (!this.pollingInterval) {
+                        this.pollingInterval = setInterval(() => {
+                            this.fetchData();
+                        }, 5000);
+                    }
+                },
+                formatDateLabel(dateStr) {
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr + 'T00:00:00');
+                    const bulanNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+                    return `${d.getDate()} ${bulanNames[d.getMonth()]} ${d.getFullYear()}`;
+                },
+                initCharts() {
+                    const configs = [
+                        { id: 'voltage', label: 'Voltage', unit: 'V AC', color: '#5B5FEF' },
+                        { id: 'current', label: 'Current', unit: 'A', color: '#F59E0B' },
+                        { id: 'daya_nyata', label: 'Active Power', unit: 'W', color: '#10B981' },
+                        { id: 'daya_semu', label: 'Apparent Power', unit: 'VA', color: '#8B5CF6' },
+                        { id: 'daya_reaktif', label: 'Reactive Power', unit: 'VAR', color: '#06B6D4' }
+                    ];
+
+                    configs.forEach(config => {
+                        const el = document.getElementById(`${config.id}Chart`);
+                        if (!el) return;
+                        
+                        const ctx = el.getContext('2d');
+                        
+                        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, `${config.color}33`); // 20% opacity
+                        gradient.addColorStop(1, `${config.color}00`); // 0% opacity
+
+                        window._chartInstances[config.id] = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: [],
+                                datasets: [{
+                                    label: `${config.label} (${config.unit})`,
+                                    data: [],
+                                    borderColor: config.color,
+                                    backgroundColor: gradient,
+                                    borderWidth: 2.5,
+                                    pointRadius: 0,
+                                    pointHoverRadius: 0,
+                                    fill: true,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(0,0,0,0.8)',
+                                        padding: 12,
+                                        titleFont: { size: 13, family: "'Inter', sans-serif" },
+                                        bodyFont: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+                                        displayColors: false,
+                                        callbacks: {
+                                            label: function(context) {
+                                                return context.parsed.y + ' ' + config.unit;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: '#f3f4f6', drawBorder: false },
+                                        ticks: { font: { family: "'Inter', sans-serif" }, color: '#9ca3af' }
+                                    },
+                                    x: {
+                                        grid: { display: false, drawBorder: false },
+                                        ticks: { font: { family: "'Inter', sans-serif" }, color: '#9ca3af' }
+                                    }
+                                },
+                                animation: { duration: 0 }
+                            }
+                        });
+                    });
+                },
+                updateAllCharts(data, timestamp) {
+                    const timeLabel = new Date(timestamp).toLocaleTimeString([], { hour12: false });
+                    const metrics = ['voltage', 'current', 'daya_nyata', 'daya_semu', 'daya_reaktif'];
+                    
+                    metrics.forEach(metric => {
+                        const chart = window._chartInstances[metric];
+                        if (!chart) return;
+
+                        const chartData = chart.data.datasets[0].data;
+                        const labels = chart.data.labels;
+                        
+                        if (labels.length === 0 || labels[labels.length - 1] !== timeLabel) {
+                            labels.push(timeLabel);
+                            chartData.push(data[metric]);
+                            
+                            if (labels.length > 20) {
+                                labels.shift();
+                                chartData.shift();
+                            }
+                            chart.update();
+                        }
+                    });
                 },
                 async fetchData() {
                     try {
@@ -354,14 +483,35 @@
                             if (result.stats) {
                                 this.sensorStats = result.stats;
                             }
-                            this.isConnected = true;
+                            // Status is calculated from server side threshold
+                            this.isConnected = (result.device_status === 'ONLINE');
                             
                             // Format timestamp nicely
-                            const date = new Date(result.data.last_update);
-                            this.lastUpdate = date.toLocaleTimeString([], { hour12: false }) + ' (' + date.toLocaleDateString() + ')';
+                            if (result.data.last_update) {
+                                const date = new Date(result.data.last_update);
+                                const jam = date.getHours().toString().padStart(2, '0');
+                                const menit = date.getMinutes().toString().padStart(2, '0');
+                                
+                                // Deteksi Label Zona Waktu Indonesia
+                                const offset = -date.getTimezoneOffset() / 60;
+                                let tzLabel = '';
+                                if (offset === 7) tzLabel = 'WIB';
+                                else if (offset === 8) tzLabel = 'WITA';
+                                else if (offset === 9) tzLabel = 'WIT';
+                                else tzLabel = 'GMT' + (offset >= 0 ? '+' : '') + offset;
+
+                                const hari = date.getDate();
+                                const bulanNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                                const bulan = bulanNames[date.getMonth()];
+                                const tahun = date.getFullYear();
+
+                                this.lastUpdate = `${jam}.${menit} ${tzLabel} - ${hari} ${bulan} ${tahun}`;
+                            } else {
+                                this.lastUpdate = 'Tidak ada data dalam 24 jam terakhir';
+                            }
                             
-                            // Update Chart
-                            this.updateChart(result.data.daya_nyata, result.data.last_update);
+                            // Update Charts
+                            this.updateAllCharts(result.data, result.data.last_update);
                         } else {
                             this.isConnected = false;
                         }

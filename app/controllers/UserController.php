@@ -69,7 +69,7 @@ class UserController extends Controller {
                 'id' => $id,
                 'name' => $_POST['name'],
                 'email' => $_POST['email'],
-                'role' => 'user' // Keep it as user
+                'role' => ($_SESSION['user']['role'] === 'admin') ? $_POST['role'] : $targetUser['role']
             ];
 
             $userModel->updateUser($data);

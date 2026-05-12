@@ -9,12 +9,36 @@ class Device {
     }
 
     public function getAllDevices() {
-        $this->db->query('SELECT * FROM ' . $this->table . ' ORDER BY created_at DESC');
+        $query = "SELECT d.*, 
+                  CASE 
+                    WHEN l.last_data >= NOW() - INTERVAL 5 MINUTE THEN 'ONLINE' 
+                    ELSE 'OFFLINE' 
+                  END as status
+                  FROM " . $this->table . " d
+                  LEFT JOIN (
+                      SELECT device_id, MAX(created_at) as last_data 
+                      FROM sensor_logs 
+                      GROUP BY device_id
+                  ) l ON d.device_code = l.device_id
+                  ORDER BY d.created_at DESC";
+        $this->db->query($query);
         return $this->db->resultSet();
     }
 
     public function getDeviceById($id) {
-        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE id = :id');
+        $query = "SELECT d.*, 
+                  CASE 
+                    WHEN l.last_data >= NOW() - INTERVAL 5 MINUTE THEN 'ONLINE' 
+                    ELSE 'OFFLINE' 
+                  END as status
+                  FROM " . $this->table . " d
+                  LEFT JOIN (
+                      SELECT device_id, MAX(created_at) as last_data 
+                      FROM sensor_logs 
+                      WHERE device_id = (SELECT device_code FROM devices WHERE id = :id)
+                  ) l ON d.device_code = l.device_id
+                  WHERE d.id = :id";
+        $this->db->query($query);
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
@@ -26,7 +50,19 @@ class Device {
     }
 
     public function getDeviceByApiKey($api_key) {
-        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE api_key = :api_key');
+        $query = "SELECT d.*, 
+                  CASE 
+                    WHEN l.last_data >= NOW() - INTERVAL 5 MINUTE THEN 'ONLINE' 
+                    ELSE 'OFFLINE' 
+                  END as status
+                  FROM " . $this->table . " d
+                  LEFT JOIN (
+                      SELECT device_id, MAX(created_at) as last_data 
+                      FROM sensor_logs 
+                      GROUP BY device_id
+                  ) l ON d.device_code = l.device_id
+                  WHERE d.api_key = :api_key";
+        $this->db->query($query);
         $this->db->bind(':api_key', $api_key);
         return $this->db->single();
     }
@@ -70,19 +106,36 @@ class Device {
     }
 
     public function getStatusCount($status) {
-        $this->db->query('SELECT COUNT(*) as total FROM ' . $this->table . ' WHERE status = :status');
+        $query = "SELECT COUNT(*) as total FROM (
+                    SELECT d.id, 
+                    CASE 
+                        WHEN l.last_data >= NOW() - INTERVAL 5 MINUTE THEN 'ONLINE' 
+                        ELSE 'OFFLINE' 
+                    END as current_status
+                    FROM " . $this->table . " d
+                    LEFT JOIN (
+                        SELECT device_id, MAX(created_at) as last_data 
+                        FROM sensor_logs 
+                        GROUP BY device_id
+                    ) l ON d.device_code = l.device_id
+                  ) status_table WHERE current_status = :status";
+        $this->db->query($query);
         $this->db->bind(':status', $status);
         return $this->db->single()['total'];
     }
 
     public function getDevicesWithLatestLog() {
-        $query = "SELECT d.*, l.voltage, l.current, l.daya_nyata, l.created_at as last_data 
+        $query = "SELECT d.*, l.voltage, l.current, l.daya_nyata, l.created_at as last_data,
+                  CASE 
+                    WHEN l.created_at >= NOW() - INTERVAL 5 MINUTE THEN 'ONLINE' 
+                    ELSE 'OFFLINE' 
+                  END as status
                   FROM " . $this->table . " d 
                   LEFT JOIN (
                       SELECT * FROM sensor_logs 
                       WHERE id IN (SELECT MAX(id) FROM sensor_logs GROUP BY device_id)
                   ) l ON d.device_code = l.device_id 
-                  ORDER BY d.status DESC, d.device_name ASC";
+                  ORDER BY status DESC, d.device_name ASC";
         $this->db->query($query);
         return $this->db->resultSet();
     }

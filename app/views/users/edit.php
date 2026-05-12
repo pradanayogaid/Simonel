@@ -23,6 +23,19 @@
                 </div>
 
                 <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-2">Role / Hak Akses</label>
+                    <select name="role" <?= $_SESSION['user']['role'] !== 'admin' ? 'disabled' : ''; ?>
+                            class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-[#5B5FEF] focus:outline-none transition-all appearance-none cursor-pointer">
+                        <option value="user" <?= $data['target_user']['role'] === 'user' ? 'selected' : ''; ?>>Standard User</option>
+                        <option value="admin" <?= $data['target_user']['role'] === 'admin' ? 'selected' : ''; ?>>Administrator</option>
+                    </select>
+                    <?php if($_SESSION['user']['role'] !== 'admin'): ?>
+                        <p class="text-[10px] text-red-400 ml-2 italic">* Hanya Administrator yang dapat mengubah role.</p>
+                        <input type="hidden" name="role" value="<?= $data['target_user']['role']; ?>">
+                    <?php endif; ?>
+                </div>
+
+                <div class="space-y-2">
                     <label class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-2">Ganti Password (Opsional)</label>
                     <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah" 
                            class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-[#5B5FEF] focus:outline-none transition-all">

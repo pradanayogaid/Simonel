@@ -21,7 +21,17 @@ class RealtimeController extends Controller {
         if ($selected_id) {
             $data['selected_device'] = $deviceModel->getDeviceById($selected_id);
         } else if (!empty($data['devices'])) {
-            $data['selected_device'] = $data['devices'][0];
+            // Find 'microinverter a' in the list
+            $default_device = null;
+            foreach ($data['devices'] as $device) {
+                if (strtolower($device['device_name']) === 'microinverter a' || strtolower($device['device_code']) === 'microinverter a') {
+                    $default_device = $device;
+                    break;
+                }
+            }
+            
+            // If found, use it, otherwise use the first one
+            $data['selected_device'] = $default_device ? $default_device : $data['devices'][0];
         } else {
             $data['selected_device'] = null;
         }
