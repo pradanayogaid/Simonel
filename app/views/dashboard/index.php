@@ -1,50 +1,53 @@
-<div class="p-8">
+<div class="p-4 sm:p-8">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-            <h1 class="text-3xl font-bold">Selamat Datang, <?= explode(' ', htmlspecialchars($data['user']['name']))[0]; ?>!</h1>
-            <p class="text-gray-500">Berikut adalah ringkasan sistem energi Anda hari ini.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold">Selamat Datang, <?= explode(' ', htmlspecialchars($data['user']['name']))[0]; ?>!</h1>
+            <p class="text-gray-500 text-sm sm:text-base">
+                Berikut adalah ringkasan sistem energi Anda hari ini, 
+                <span class="font-bold text-[#5B5FEF] sm:text-gray-500 sm:font-normal"><?= date('d M Y'); ?></span>.
+            </p>
         </div>
-        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-sm font-bold text-gray-500">
+        <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-sm font-bold text-gray-500">
             <i class='bx bx-calendar text-[#5B5FEF] text-lg'></i>
             <span><?= date('d M Y'); ?></span>
         </div>
     </div>
     
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-10">
         <!-- Total Devices -->
-        <div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-[#5B5FEF] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+        <div class="bg-white rounded-[32px] p-5 sm:p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full mb-3 sm:mb-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 text-[#5B5FEF] flex items-center justify-center text-xl sm:text-2xl group-hover:scale-110 transition-transform mx-auto sm:mx-0 mb-2 sm:mb-0">
                     <i class='bx bxs-devices'></i>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Perangkat</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Perangkat</span>
             </div>
             <div>
-                <h3 class="text-3xl font-black text-gray-800"><?= $data['stats']['total_devices']; ?></h3>
-                <p class="text-xs text-gray-400 mt-1">Perangkat Terdaftar</p>
+                <h3 class="text-xl sm:text-3xl font-black text-gray-800"><?= $data['stats']['total_devices']; ?></h3>
+                <p class="text-[10px] sm:text-xs text-gray-400 mt-1">Terdaftar</p>
             </div>
         </div>
 
         <!-- Online Devices -->
-        <div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <div class="w-12 h-12 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+        <div class="bg-white rounded-[32px] p-5 sm:p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full mb-3 sm:mb-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center text-xl sm:text-2xl group-hover:scale-110 transition-transform mx-auto sm:mx-0 mb-2 sm:mb-0">
                     <i class='bx bx-wifi'></i>
                 </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status Online</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status Online</span>
             </div>
             <div>
-                <h3 class="text-3xl font-black text-gray-800"><?= $data['stats']['online_devices']; ?></h3>
-                <p class="text-xs text-green-500 mt-1 font-bold flex items-center gap-1">
+                <h3 class="text-xl sm:text-3xl font-black text-gray-800"><?= $data['stats']['online_devices']; ?></h3>
+                <p class="text-[10px] sm:text-xs text-green-500 mt-1 font-bold flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    Perangkat Aktif
+                    Aktif
                 </p>
             </div>
         </div>
 
         <!-- Total Power (Daya Nyata) -->
-        <div class="bg-[#5B5FEF] rounded-[32px] p-6 shadow-lg shadow-indigo-100 relative overflow-hidden group">
+        <div class="col-span-2 md:col-span-1 bg-[#5B5FEF] rounded-[32px] p-6 shadow-lg shadow-indigo-100 relative overflow-hidden group">
             <div class="relative z-10">
                 <div class="flex justify-between items-center mb-4">
                     <div class="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
@@ -66,15 +69,15 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
         <!-- Energy Trend Chart -->
-        <div class="lg:col-span-2 bg-white rounded-[40px] p-8 shadow-sm border border-gray-50">
-            <div class="flex justify-between items-center mb-6">
+        <div class="lg:col-span-2 bg-white rounded-[40px] p-6 sm:p-8 shadow-sm border border-gray-50">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3">
                 <div>
                     <h2 class="text-xl font-bold text-gray-800">Tren Konsumsi Energi</h2>
                     <p class="text-sm text-gray-400">7 hari terakhir (kWh)</p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-[#5B5FEF]"></span>
-                    <span class="text-xs font-bold text-gray-400 uppercase">Total Konsumsi</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Konsumsi</span>
                 </div>
             </div>
             <div class="h-[300px] w-full">

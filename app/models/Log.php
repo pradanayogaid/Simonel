@@ -119,7 +119,7 @@ class Log {
         return $this->db->single()['total_power'] ?? 0;
     }
 
-    public function getAllLogs($limit = 100, $search = null) {
+    public function getAllLogs($limit = null, $search = null) {
         $sql = 'SELECT ' . $this->table . '.*, devices.device_name 
                 FROM ' . $this->table . ' 
                 JOIN devices ON ' . $this->table . '.device_id = devices.device_code';
@@ -129,13 +129,19 @@ class Log {
                       OR ' . $this->table . '.device_id LIKE :search';
         }
         
-        $sql .= ' ORDER BY created_at DESC LIMIT :limit';
+        $sql .= ' ORDER BY created_at DESC';
+        
+        if ($limit) {
+            $sql .= ' LIMIT :limit';
+        }
         
         $this->db->query($sql);
         if ($search) {
             $this->db->bind(':search', "%$search%");
         }
-        $this->db->bind(':limit', $limit);
+        if ($limit) {
+            $this->db->bind(':limit', $limit);
+        }
         return $this->db->resultSet();
     }
 

@@ -14,7 +14,8 @@ class LogController extends Controller {
         
         $data['title'] = 'Logs';
         $data['user'] = $_SESSION['user'];
-        $data['logs'] = $logModel->getAllLogs(100, $search); // Show last 100 logs
+        // Fetch more records to allow pagination (e.g., last 1000 or all if possible)
+        $data['logs'] = $logModel->getAllLogs(null, $search); 
         $data['search'] = $search;
 
         $this->view('layouts/header', $data);

@@ -24,9 +24,9 @@
                 <input type="text" name="location" id="location" class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-[#5B5FEF] focus:border-[#5B5FEF]" placeholder="e.g. Floor 1 - Server Room" required>
             </div>
 
-            <div class="flex justify-end gap-3">
-                <a href="<?= BASEURL; ?>/device" class="px-6 py-2 rounded-full border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors">Cancel</a>
-                <button type="submit" class="px-6 py-2 rounded-full bg-[#5B5FEF] text-white font-bold hover:bg-[#4a4ed8] transition-colors">Create Device</button>
+            <div class="flex flex-col sm:flex-row-reverse justify-end gap-4 sm:gap-3 mt-8">
+                <button type="submit" class="w-full sm:w-auto px-8 py-3 rounded-2xl bg-[#5B5FEF] text-white font-bold hover:bg-[#4a4ed8] shadow-lg shadow-indigo-100 transition-all">Create Device</button>
+                <a href="<?= BASEURL; ?>/device" class="w-full sm:w-auto px-6 py-3 rounded-2xl text-gray-400 hover:text-gray-600 font-bold text-center transition-colors">Cancel</a>
             </div>
         </form>
     </div>

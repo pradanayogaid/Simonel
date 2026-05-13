@@ -1,13 +1,14 @@
 <?php if (isset($_SESSION['user'])) : ?>
     <!-- Footer -->
-    <footer class="mt-auto py-8 px-10">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-gray-100">
+    <footer class="mt-auto py-8 px-4 sm:px-10">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pt-8 border-t border-gray-100">
             <div class="flex items-center gap-2 text-[#5B5FEF]">
                 <i class='bx bxs-zap text-xl'></i>
                 <span class="font-bold tracking-tight">SIMONEL <span class="text-gray-300 font-medium">v1.0</span></span>
             </div>
-            <p class="text-gray-400 text-sm font-medium">
-                &copy; <?= date('Y'); ?> Monitoring Listrik Terpadu. Built for Excellence.
+            <p class="text-gray-400 text-xs sm:text-sm font-medium">
+                &copy; <?= date('Y'); ?> Monitoring Listrik Terpadu. 
+                <span class="block mt-1 sm:mt-0 sm:inline">Built for Excellence.</span>
             </p>
         </div>
     </footer>

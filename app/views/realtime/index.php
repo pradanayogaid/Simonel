@@ -6,13 +6,13 @@
         </div>
         
         <?php if (!empty($data['devices'])) : ?>
-        <div class="relative" x-data="{ open: false }">
+        <div class="relative w-full md:w-auto" x-data="{ open: false }">
             <!-- Custom Dropdown Trigger -->
-            <div @click="open = !open" class="flex items-center gap-4 bg-white p-3 px-5 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:border-[#5B5FEF] transition-all min-w-[240px]">
+            <div @click="open = !open" class="flex items-center gap-4 bg-white p-3 px-5 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:border-[#5B5FEF] transition-all w-full md:min-w-[240px]">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-[#5B5FEF] shrink-0">
                     <i class='bx bxs-microchip text-xl'></i>
                 </div>
-                <div class="flex-1 overflow-hidden">
+                <div class="flex-1 overflow-hidden text-left">
                     <div class="font-bold text-gray-800 truncate leading-tight"><?= htmlspecialchars($data['selected_device']['device_name']); ?></div>
                     <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5"><?= htmlspecialchars($data['selected_device']['device_code']); ?></div>
                 </div>
@@ -33,7 +33,7 @@
                     <div class="w-10 h-10 rounded-xl <?= ($data['selected_device'] && $data['selected_device']['id'] == $device['id']) ? 'bg-[#5B5FEF] text-white' : 'bg-gray-100 text-gray-400'; ?> flex items-center justify-center shrink-0">
                         <i class='bx bxs-microchip text-xl'></i>
                     </div>
-                    <div class="flex-1 overflow-hidden">
+                    <div class="flex-1 overflow-hidden text-left">
                         <div class="font-bold text-gray-700 truncate leading-tight"><?= htmlspecialchars($device['device_name']); ?></div>
                         <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5"><?= htmlspecialchars($device['device_code']); ?></div>
                     </div>
@@ -56,26 +56,41 @@
     <!-- Status & Connection info -->
     <div class="flex items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-sm font-bold" :class="isConnected ? 'text-green-500' : 'text-red-500'">
+            <div class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-sm font-bold" :class="isConnected ? 'text-green-500' : 'text-red-500'">
                 <div class="w-2.5 h-2.5 rounded-full" :class="isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></div>
-                <span x-text="isConnected ? 'ONLINE' : 'OFFLINE'"></span>
+                <span class="hidden sm:inline" x-text="isConnected ? 'ONLINE' : 'OFFLINE'"></span>
             </div>
-            <div class="text-sm text-gray-400 font-medium">
-                Updated : <span x-text="lastUpdate">Menunggu data...</span>
+            <div class="hidden md:flex items-center gap-2 text-xs sm:text-sm text-gray-400 font-medium">
+                <i class='bx bx-time-five text-[#5B5FEF] text-lg lg:hidden' x-show="lastUpdate !== 'Tidak ada data dalam 24 jam terakhir'"></i>
+                <span class="hidden md:inline">Updated :</span>
+                <span x-text="lastUpdate" 
+                      :class="lastUpdate === 'Tidak ada data dalam 24 jam terakhir' ? 'hidden md:inline' : 'inline'"
+                      class="font-bold sm:font-medium">Menunggu...</span>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <input type="date"
-                   id="chartDatePicker"
-                   x-model="selectedDate"
-                   @change="onDateChange()"
-                   :max="todayDate"
-                   class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-2xl px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B5FEF]/30 focus:border-[#5B5FEF] transition-all cursor-pointer">
+            <div class="relative transition-all duration-300 flex items-center" 
+                 :class="selectedDate ? 'w-auto' : 'w-11 lg:w-11'">
+                
+                <!-- Unified Custom Icon UI (Visible on all devices) -->
+                <div class="h-11 flex items-center bg-white border border-gray-200 rounded-2xl shadow-sm px-3 gap-2 overflow-hidden transition-all duration-300 shrink-0">
+                    <i class='bx bx-calendar text-[#5B5FEF] text-xl'></i>
+                    <span x-show="selectedDate" x-transition class="text-xs lg:text-sm font-bold text-gray-700 whitespace-nowrap" x-text="formatDateLabel(selectedDate)"></span>
+                </div>
+
+                <!-- The Actual Date Input (Hidden but fills the area to catch clicks) -->
+                <input type="date"
+                       id="chartDatePicker"
+                       x-model="selectedDate"
+                       @change="onDateChange()"
+                       :max="todayDate"
+                       class="absolute inset-0 opacity-0 cursor-pointer w-full h-full [&::-webkit-calendar-picker-indicator]:block [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0">
+            </div>
             <button @click="resetToLive()"
                     x-show="selectedDate"
-                    class="flex items-center gap-1.5 px-4 py-2 bg-indigo-50 text-[#5B5FEF] text-sm font-bold rounded-2xl hover:bg-indigo-100 transition-all">
+                    class="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-indigo-50 text-[#5B5FEF] text-sm font-bold rounded-2xl hover:bg-indigo-100 transition-all">
                 <i class='bx bx-revision'></i>
-                Live
+                <span class="hidden sm:inline">Live</span>
             </button>
         </div>
     </div>
@@ -254,10 +269,13 @@
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white" style="background-color: <?= $c['color']; ?>">
                         <i class='bx bx-line-chart text-xl'></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800">Tren <?= $c['title']; ?></h2>
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <span class="md:hidden">Tren <?= preg_replace('/\s*\(.*?\)/', '', $c['title']); ?></span>
+                        <span class="hidden md:inline">Tren <?= $c['title']; ?></span>
+                    </h2>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-gray-50 text-gray-400 text-[10px] font-bold rounded-lg uppercase tracking-widest">Realtime</span>
+                    <span class="hidden md:inline-block px-3 py-1 bg-gray-50 text-gray-400 text-[10px] font-bold rounded-lg uppercase tracking-widest">Realtime</span>
                     <i class='bx text-2xl text-gray-300 transition-transform duration-300' :class="open ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
                 </div>
             </div>
@@ -338,7 +356,10 @@
                         }
 
                         const metrics = ['voltage', 'current', 'daya_nyata', 'daya_semu', 'daya_reaktif'];
-                        const labels = result.labels.map(ts => new Date(ts).toLocaleTimeString([], { hour12: false }));
+                        const labels = result.labels.map(ts => {
+                            const d = new Date(ts);
+                            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+                        });
 
                         metrics.forEach(metric => {
                             const chart = window._chartInstances[metric];
@@ -451,7 +472,8 @@
                     });
                 },
                 updateAllCharts(data, timestamp) {
-                    const timeLabel = new Date(timestamp).toLocaleTimeString([], { hour12: false });
+                    const d = new Date(timestamp);
+                    const timeLabel = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
                     const metrics = ['voltage', 'current', 'daya_nyata', 'daya_semu', 'daya_reaktif'];
                     
                     metrics.forEach(metric => {

@@ -17,33 +17,65 @@
         .swal2-popup { border-radius: 32px !important; font-family: 'Outfit', sans-serif !important; }
     </style>
 </head>
-<body class="bg-[#F5F7FB] min-h-screen text-[#1E1E2D] <?= isset($_SESSION['user']) ? 'flex' : ''; ?>" x-data="{ minimized: false }">
+<body class="bg-[#F5F7FB] min-h-screen text-[#1E1E2D] <?= isset($_SESSION['user']) ? 'flex flex-col lg:flex-row' : ''; ?>" x-data="{ minimized: false, mobileMenuOpen: false }">
 
 <?php if (isset($_SESSION['user'])) : ?>
+    <!-- Mobile Header -->
+    <header class="lg:hidden bg-white px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-40">
+        <h1 class="text-xl font-bold text-[#5B5FEF] flex items-center gap-2">
+            <i class='bx bxs-zap'></i> SIMONEL
+        </h1>
+        <button @click="mobileMenuOpen = true" class="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-[#5B5FEF]">
+            <i class='bx bx-menu text-2xl'></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div x-show="mobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileMenuOpen = false"
+         class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 lg:hidden">
+    </div>
+
     <!-- Sidebar -->
     <aside 
-        :class="minimized ? 'w-24' : 'w-72'"
-        class="bg-white min-h-screen sticky top-0 shadow-sm rounded-r-[40px] flex flex-col p-6 z-50 transition-all duration-300 ease-in-out">
+        :class="{
+            'w-72': !minimized,
+            'w-24': minimized,
+            'translate-x-0': mobileMenuOpen,
+            '-translate-x-full lg:translate-x-0': !mobileMenuOpen
+        }"
+        class="bg-white fixed inset-y-0 left-0 lg:sticky lg:top-0 lg:h-screen h-full overflow-y-auto shadow-sm flex flex-col p-5 lg:p-6 z-[60] transition-all duration-300 ease-in-out">
         
-        <div class="mb-10 flex items-center justify-between px-2">
-            <h1 x-show="!minimized" x-transition class="text-2xl font-bold text-[#5B5FEF] flex items-center gap-2 overflow-hidden whitespace-nowrap">
+        <div class="mb-4 lg:mb-10 flex items-center justify-between px-2 shrink-0">
+            <h1 x-show="!minimized" x-transition class="text-xl lg:text-2xl font-bold text-[#5B5FEF] flex items-center gap-2 overflow-hidden whitespace-nowrap">
                 <i class='bx bxs-zap'></i> SIMONEL
             </h1>
-            <button @click="minimized = !minimized" class="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-[#5B5FEF] transition-colors">
-                <i class='bx' :class="minimized ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <button @click="minimized = !minimized" class="hidden lg:block p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-[#5B5FEF] transition-colors">
+                    <i class='bx' :class="minimized ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
+                </button>
+                <button @click="mobileMenuOpen = false" class="lg:hidden p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-[#5B5FEF]">
+                    <i class='bx bx-x text-2xl'></i>
+                </button>
+            </div>
         </div>
 
-        <nav class="flex-1 space-y-2">
+        <nav class="space-y-1 lg:space-y-2">
             <a href="<?= BASEURL; ?>/dashboard" 
-               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= $data['title'] == 'Dashboard' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               class="flex items-center gap-4 px-4 py-2.5 lg:py-3 rounded-2xl transition-all <?= $data['title'] == 'Dashboard' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
                :title="minimized ? 'Dashboard' : ''">
                 <i class='bx bxs-dashboard text-xl min-w-[24px]'></i>
                 <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Dashboard</span>
             </a>
             
             <a href="<?= BASEURL; ?>/realtime" 
-               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= $data['title'] == 'Realtime' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               class="flex items-center gap-4 px-4 py-2.5 lg:py-3 rounded-2xl transition-all <?= $data['title'] == 'Realtime' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
                :title="minimized ? 'Realtime' : ''">
                 <i class='bx bxs-bar-chart-alt-2 text-xl min-w-[24px]'></i>
                 <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Realtime</span>
@@ -51,7 +83,7 @@
 
             <?php if ($_SESSION['user']['role'] === 'admin') : ?>
             <a href="<?= BASEURL; ?>/device" 
-               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device']) ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               class="flex items-center gap-4 px-4 py-2.5 lg:py-3 rounded-2xl transition-all <?= in_array($data['title'], ['Devices', 'Add Device', 'Edit Device']) ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
                :title="minimized ? 'Devices' : ''">
                 <i class='bx bxs-devices text-xl min-w-[24px]'></i>
                 <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Devices</span>
@@ -59,21 +91,21 @@
             <?php endif; ?>
 
             <a href="<?= BASEURL; ?>/export" 
-               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= $data['title'] == 'Export' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               class="flex items-center gap-4 px-4 py-2.5 lg:py-3 rounded-2xl transition-all <?= $data['title'] == 'Export' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
                :title="minimized ? 'Export' : ''">
                 <i class='bx bxs-cloud-download text-xl min-w-[24px]'></i>
                 <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Export</span>
             </a>
             
             <a href="<?= BASEURL; ?>/log" 
-               class="flex items-center gap-4 px-4 py-3 rounded-2xl transition-all <?= $data['title'] == 'Logs' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
+               class="flex items-center gap-4 px-4 py-2.5 lg:py-3 rounded-2xl transition-all <?= $data['title'] == 'Logs' ? 'bg-[#5B5FEF] text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-50'; ?>"
                :title="minimized ? 'Logs' : ''">
                 <i class='bx bxs-time-five text-xl min-w-[24px]'></i>
                 <span x-show="!minimized" x-transition class="font-semibold overflow-hidden whitespace-nowrap">Logs</span>
             </a>
         </nav>
 
-        <div class="mt-auto pt-10" x-data="{ settingsOpen: false }">
+        <div class="mt-4 lg:mt-auto pt-2 lg:pt-10 shrink-0" x-data="{ settingsOpen: false }">
             <!-- Settings Submenu Trigger -->
             <div class="relative">
                 <!-- Submenu content (appears upwards) -->
@@ -119,5 +151,5 @@
     </aside>
 
     <!-- Main Content wrapper -->
-    <main class="flex-1 h-screen overflow-y-auto flex flex-col">
+    <main class="flex-1 lg:h-screen lg:overflow-y-auto flex flex-col">
 <?php endif; ?>

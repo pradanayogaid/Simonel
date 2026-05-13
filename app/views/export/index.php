@@ -15,12 +15,12 @@ $date_to        = $data['date_to']   ?? '';
 $today          = date('Y-m-d');
 ?>
 
-<div class="p-8" x-data="exportPage()">
+<div class="p-4 sm:p-8" x-data="exportPage()">
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-            <h1 class="text-3xl font-bold">Export Data</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Pilih Data</h1>
             <p class="text-gray-500">Unduh data sensor dalam rentang waktu tertentu</p>
         </div>
     </div>
@@ -57,49 +57,56 @@ $today          = date('Y-m-d');
                 <!-- Date From -->
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tanggal Mulai</label>
-                    <div class="relative">
-                        <i class='bx bx-calendar absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg'></i>
+                    <div class="relative h-11 sm:h-12 group">
+                        <div class="absolute inset-0 bg-gray-50 border border-gray-200 rounded-2xl flex items-center px-4 gap-3 pointer-events-none group-focus-within:ring-2 group-focus-within:ring-[#5B5FEF]/30 group-focus-within:border-[#5B5FEF] transition-all">
+                            <i class='bx bx-calendar text-[#5B5FEF] text-xl'></i>
+                            <span class="text-sm font-bold text-gray-700" x-text="formatDate(dateFrom)"></span>
+                        </div>
                         <input type="date" name="date_from" required
-                               value="<?= htmlspecialchars($date_from ?: $today); ?>"
+                               x-model="dateFrom"
                                max="<?= $today; ?>"
-                               class="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-sm font-bold rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#5B5FEF]/30 focus:border-[#5B5FEF] transition-all cursor-pointer">
+                               class="absolute inset-0 opacity-0 cursor-pointer w-full h-full [&::-webkit-calendar-picker-indicator]:block [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0">
                     </div>
                 </div>
 
                 <!-- Date To -->
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tanggal Akhir</label>
-                    <div class="relative">
-                        <i class='bx bx-calendar-check absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg'></i>
+                    <div class="relative h-11 sm:h-12 group">
+                        <div class="absolute inset-0 bg-gray-50 border border-gray-200 rounded-2xl flex items-center px-4 gap-3 pointer-events-none group-focus-within:ring-2 group-focus-within:ring-[#5B5FEF]/30 group-focus-within:border-[#5B5FEF] transition-all">
+                            <i class='bx bx-calendar-check text-[#5B5FEF] text-xl'></i>
+                            <span class="text-sm font-bold text-gray-700" x-text="formatDate(dateTo)"></span>
+                        </div>
                         <input type="date" name="date_to" required
-                               value="<?= htmlspecialchars($date_to ?: $today); ?>"
+                               x-model="dateTo"
                                max="<?= $today; ?>"
-                               class="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-sm font-bold rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#5B5FEF]/30 focus:border-[#5B5FEF] transition-all cursor-pointer">
+                               class="absolute inset-0 opacity-0 cursor-pointer w-full h-full [&::-webkit-calendar-picker-indicator]:block [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0">
                     </div>
                 </div>
             </div>
 
             <!-- Row 2: Field Checkboxes -->
-            <div class="mb-8">
+            <div class="mb-8" x-data="{ allSelected: <?= empty($selectedFields) || count($selectedFields) == count($fieldMap) ? 'true' : 'false' ?> }">
                 <div class="flex items-center justify-between mb-4">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Pilih Kolom Data</label>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="checkAll(true)"
-                                class="text-xs font-bold text-[#5B5FEF] hover:underline">Pilih Semua</button>
-                        <span class="text-gray-300">|</span>
-                        <button type="button" onclick="checkAll(false)"
-                                class="text-xs font-bold text-gray-400 hover:underline">Hapus Semua</button>
-                    </div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Pilih Data</label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <span class="text-[10px] font-bold text-gray-400 group-hover:text-[#5B5FEF] transition-colors">Pilih Semua</span>
+                        <div class="relative inline-flex items-center">
+                            <input type="checkbox" x-model="allSelected" 
+                                   @change="document.querySelectorAll('input[name=\'fields[]\']').forEach(cb => cb.checked = allSelected)"
+                                   class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#5B5FEF]"></div>
+                        </div>
+                    </label>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                     <?php foreach ($fieldMap as $key => $info) : ?>
                     <label class="relative cursor-pointer group">
                         <input type="checkbox" name="fields[]" value="<?= $key; ?>"
+                               @change="allSelected = (document.querySelectorAll('input[name=\'fields[]\']:checked').length === <?= count($fieldMap) ?>)"
                                class="peer hidden"
                                <?= (!empty($selectedFields) && in_array($key, $selectedFields)) || empty($selectedFields) ? 'checked' : ''; ?>>
-                        <div class="peer-checked:border-[<?= $info['color']; ?>] peer-checked:bg-[<?= $info['color']; ?>]/5 
-                                    border-2 border-gray-100 rounded-2xl p-4 transition-all
-                                    group-hover:border-gray-200 group-hover:shadow-sm">
+                        <div class="peer-checked:border-[<?= $info['color']; ?>] peer-checked:bg-[<?= $info['color']; ?>]/5 border-2 border-gray-100 rounded-2xl p-4 transition-all group-hover:border-gray-200 group-hover:shadow-sm">
                             <div class="w-10 h-10 rounded-xl mb-3 flex items-center justify-center text-white text-xl"
                                  style="background-color: <?= $info['color']; ?>">
                                 <i class='bx <?= $info['icon']; ?>'></i>
@@ -107,10 +114,7 @@ $today          = date('Y-m-d');
                             <p class="text-sm font-bold text-gray-700"><?= $info['label']; ?></p>
                             <p class="text-xs text-gray-400 mt-0.5"><?= $info['unit']; ?></p>
                         </div>
-                        <!-- Checkmark badge -->
-                        <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-gray-200 
-                                    peer-checked:border-transparent peer-checked:bg-[<?= $info['color']; ?>]
-                                    flex items-center justify-center transition-all">
+                        <div class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-gray-200 peer-checked:border-transparent peer-checked:bg-[<?= $info['color']; ?>] flex items-center justify-center transition-all">
                             <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                             </svg>
@@ -121,11 +125,11 @@ $today          = date('Y-m-d');
             </div>
 
             <!-- Generate Button -->
-            <div class="flex justify-end">
+            <div class="mt-8">
                 <button type="submit"
-                        class="flex items-center gap-3 px-8 py-3.5 bg-[#5B5FEF] text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-600 active:scale-95 transition-all text-sm">
-                    <i class='bx bx-table text-xl'></i>
-                    Generate Preview
+                        class="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#5B5FEF] text-white font-bold rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-600 active:scale-95 transition-all text-base sm:text-lg">
+                    <i class='bx bx-table text-2xl'></i>
+                    <span>Tampilkan Data Tabel</span>
                 </button>
             </div>
         </form>
@@ -148,16 +152,11 @@ $today          = date('Y-m-d');
                 </p>
             </div>
             <!-- Action Buttons -->
-            <div class="flex items-center gap-2 shrink-0">
-                <button onclick="window.print()"
-                        class="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 text-sm font-bold rounded-2xl hover:bg-white hover:border-gray-300 transition-all">
-                    <i class='bx bx-printer text-lg'></i>
-                    <span>Cetak</span>
-                </button>
-                <button onclick="downloadPDF()"
-                        class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 text-red-500 text-sm font-bold rounded-2xl hover:bg-red-100 transition-all">
-                    <i class='bx bxs-file-pdf text-lg'></i>
-                    <span>PDF</span>
+            <div class="flex items-center gap-2 shrink-0 no-print">
+                <button onclick="downloadPDF(this)" id="btnPdf"
+                        class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 text-red-500 text-sm font-bold rounded-2xl hover:bg-red-100 transition-all disabled:opacity-50 disabled:cursor-wait">
+                    <i class='bx bxs-file-pdf text-lg' id="iconPdf"></i>
+                    <span id="textPdf">PDF</span>
                 </button>
                 <form method="POST" action="<?= BASEURL; ?>/export/generate" class="inline">
                     <input type="hidden" name="device_id" value="<?= htmlspecialchars($device['id']); ?>">
@@ -191,204 +190,226 @@ $today          = date('Y-m-d');
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    <?php foreach ($logs as $i => $row) : ?>
-                    <tr class="hover:bg-gray-50/50 transition-colors">
-                        <td class="px-6 py-3.5 text-gray-300 font-bold text-xs"><?= $i + 1; ?></td>
-                        <td class="px-6 py-3.5 font-medium text-gray-600 whitespace-nowrap">
-                            <?= date('d/m/Y', strtotime($row['created_at'])); ?>
-                            <span class="text-gray-400 font-normal ml-1"><?= date('H:i:s', strtotime($row['created_at'])); ?></span>
-                        </td>
-                        <?php foreach ($selectedFields as $f) : if (!isset($fieldMap[$f])) continue; ?>
-                        <td class="px-6 py-3.5 text-right font-bold" style="color: <?= $fieldMap[$f]['color']; ?>">
-                            <?= number_format($row[$f] ?? 0, 2); ?>
-                        </td>
-                        <?php endforeach; ?>
-                    </tr>
-                    <?php endforeach; ?>
+                    <template x-for="(row, index) in paginatedLogs" :key="index">
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-3.5 text-gray-300 font-bold text-xs" x-text="((currentPage - 1) * pageSize) + index + 1"></td>
+                            <td class="px-6 py-3.5 font-medium text-gray-600 whitespace-nowrap">
+                                <span x-text="formatDateTime(row.created_at).date"></span>
+                                <span class="text-gray-400 font-normal ml-1" x-text="formatDateTime(row.created_at).time"></span>
+                            </td>
+                            <?php foreach ($selectedFields as $f) : if (!isset($fieldMap[$f])) continue; ?>
+                            <td class="px-6 py-3.5 text-right font-bold text-[<?= $fieldMap[$f]['color']; ?>]" x-text="Number(row.<?= $f; ?> || 0).toFixed(2)"></td>
+                            <?php endforeach; ?>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <?php elseif (isset($data['device'])) : ?>
-    <!-- Empty State -->
-    <div class="bg-white rounded-[32px] p-12 shadow-sm border border-gray-100 text-center">
-        <div class="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center mx-auto mb-4 text-4xl text-gray-300">
-            <i class='bx bx-data'></i>
+        <!-- Pagination Controls -->
+        <div class="p-4 sm:p-6 border-t border-gray-50 flex flex-col items-center gap-4 no-print">
+            <div class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest text-center">
+                Menampilkan <span class="text-gray-700" x-text="startRange"></span> - <span class="text-gray-700" x-text="endRange"></span> 
+                dari <span class="text-[#5B5FEF]" x-text="totalLogs"></span> data
+            </div>
+            <div class="flex items-center justify-center gap-1 sm:gap-2 w-full max-w-sm sm:max-w-none">
+                <button @click="currentPage = 1" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-100 text-gray-400 disabled:opacity-30 transition-all shrink-0"><i class='bx bx-chevrons-left text-lg'></i></button>
+                <button @click="currentPage--" :disabled="currentPage === 1" class="flex-1 sm:flex-none h-10 px-2 sm:px-4 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-100 text-gray-400 disabled:opacity-30 transition-all"><i class='bx bx-chevron-left text-xl sm:hidden'></i><span class="hidden sm:inline text-xs font-bold">Sebelumnya</span></button>
+                <div class="sm:hidden flex-1 text-center font-black text-sm text-gray-700 px-2"><span x-text="currentPage"></span> <span class="text-gray-300 font-normal">/</span> <span x-text="totalPages"></span></div>
+                <div class="hidden sm:flex items-center gap-1 px-2">
+                    <template x-for="p in visiblePages" :key="p">
+                        <button @click="currentPage = p" :class="currentPage === p ? 'bg-[#5B5FEF] text-white' : 'bg-white text-gray-400'" class="w-9 h-9 rounded-xl text-xs font-bold transition-all" x-text="p"></button>
+                    </template>
+                </div>
+                <button @click="currentPage++" :disabled="currentPage === totalPages" class="flex-1 sm:flex-none h-10 px-2 sm:px-4 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-100 text-gray-400 disabled:opacity-30 transition-all"><i class='bx bx-chevron-right text-xl sm:hidden'></i><span class="hidden sm:inline text-xs font-bold">Selanjutnya</span></button>
+                <button @click="currentPage = totalPages" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-100 text-gray-400 disabled:opacity-30 transition-all shrink-0"><i class='bx bx-chevrons-right text-lg'></i></button>
+            </div>
         </div>
+    </div>
+    <?php elseif (isset($data['device'])) : ?>
+    <div class="bg-white rounded-[32px] p-12 shadow-sm border border-gray-100 text-center">
+        <div class="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center mx-auto mb-4 text-4xl text-gray-300"><i class='bx bx-data'></i></div>
         <h3 class="text-xl font-bold text-gray-700 mb-2">Tidak Ada Data</h3>
         <p class="text-gray-400 text-sm">Tidak ditemukan data sensor pada rentang tanggal yang dipilih.</p>
     </div>
     <?php endif; ?>
-
 </div>
 
 <style>
 @media print {
-    aside, nav, button, form, h1, .text-gray-500 { display: none !important; }
-    body { background: white !important; }
-    #printArea { border: none !important; box-shadow: none !important; }
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; border: none !important; box-shadow: none !important; }
+    .no-print { display: none !important; }
 }
 </style>
 
-<!-- jsPDF + AutoTable -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-function checkAll(state) {
-    document.querySelectorAll('input[name="fields[]"]').forEach(cb => cb.checked = state);
-}
-
-function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    
-    // --- Determine Dynamic Orientation ---
-    const table = document.querySelector('#previewTable');
-    const heads = [];
-    table.querySelectorAll('thead tr th').forEach(th => heads.push(th.innerText.trim()));
-    
-    // Check only metric data columns (exclude No and Waktu)
-    const metricCount = heads.length - 2;
-    const orientation = metricCount >= 4 ? 'landscape' : 'portrait';
-    const doc = new jsPDF({ orientation: orientation, unit: 'mm', format: 'a4' });
-
-    const W = orientation === 'landscape' ? 297 : 210;
-    const H = orientation === 'landscape' ? 210 : 297;
-    
-    const deviceName = document.querySelector('#pdfDeviceName')?.textContent?.trim() || '-';
-    const dateRange  = document.querySelector('#pdfDateRange')?.textContent?.trim()  || '-';
-    const rowCount   = document.querySelectorAll('#previewTable tbody tr').length;
-    const genDate    = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
-    // ── 1. Dark navy header block ──────────────────────────────────
-    doc.setFillColor(15, 23, 42);        // slate-900
-    doc.rect(0, 0, W, 42, 'F');
-
-    // Accent stripe
-    doc.setFillColor(91, 95, 239);       // indigo
-    doc.rect(0, 42, W, 3, 'F');
-
-    // SIMONEL wordmark
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SIMONEL', 14, 20);
-
-    // Tagline
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(148, 163, 184);     // slate-400
-    doc.text('Sistem Monitoring Energi Listrik', 14, 28);
-
-    // Report label (top-right)
-    doc.setFontSize(8);
-    doc.setTextColor(99, 102, 241);      // indigo-400
-    doc.setFont('helvetica', 'bold');
-    doc.text('LAPORAN DATA SENSOR', W - 14, 18, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(148, 163, 184);
-    doc.setFontSize(7.5);
-    doc.text(genDate, W - 14, 25, { align: 'right' });
-
-    // ── 2. Info card ───────────────────────────────────────────────
-    doc.setFillColor(248, 250, 252);     // slate-50
-    doc.setDrawColor(226, 232, 240);     // slate-200
-    doc.roundedRect(14, 50, W - 28, 30, 3, 3, 'FD');
-
-    // Left column labels
-    doc.setFontSize(7);
-    doc.setTextColor(148, 163, 184);
-    doc.setFont('helvetica', 'bold');
-    doc.text('PERANGKAT', 20, 58);
-    doc.text('PERIODE', 20, 68);
-    doc.text('TOTAL DATA', 20, 78);
-
-    // Right column values
-    doc.setFontSize(8.5);
-    doc.setTextColor(15, 23, 42);
-    doc.setFont('helvetica', 'bold');
-    doc.text(deviceName, 58, 58);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 65, 85);
-    doc.text(dateRange, 58, 68);
-    doc.text(rowCount + ' baris', 58, 78);
-
-    // Vertical divider
-    doc.setDrawColor(226, 232, 240);
-    doc.line(52, 53, 52, 83);
-
-    // ── 3. Read table data ─────────────────────────────────────────
-    const rows  = [];
-    table.querySelectorAll('tbody tr').forEach(tr => {
-        const row = [];
-        tr.querySelectorAll('td').forEach(td => row.push(td.innerText.trim()));
-        rows.push(row);
-    });
-
-    // ── 4. Table ───────────────────────────────────────────────────
-    doc.autoTable({
-        head: [heads],
-        body: rows,
-        startY: 86,
-        styles: {
-            font: 'helvetica',
-            fontSize: 8,
-            cellPadding: { top: 4, bottom: 4, left: 5, right: 5 },
-            textColor: [51, 65, 85],
-            lineColor: [241, 245, 249],
-            lineWidth: 0.3,
+function exportPage() {
+    return {
+        logs: <?= json_encode($logs); ?>,
+        dateFrom: '<?= $date_from ?: $today ?>',
+        dateTo: '<?= $date_to ?: $today ?>',
+        allSelected: <?= empty($selectedFields) || count($selectedFields) == count($fieldMap) ? 'true' : 'false' ?>,
+        currentPage: 1,
+        pageSize: 20,
+        get totalLogs() { return this.logs.length; },
+        get totalPages() { return Math.ceil(this.totalLogs / this.pageSize); },
+        get startRange() { return (this.currentPage - 1) * this.pageSize + 1; },
+        get endRange() { return Math.min(this.currentPage * this.pageSize, this.totalLogs); },
+        get paginatedLogs() {
+            const start = (this.currentPage - 1) * this.pageSize;
+            return this.logs.slice(start, start + this.pageSize);
         },
-        headStyles: {
-            fillColor: [15, 23, 42],
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            fontSize: 7.5,
-            halign: 'center',
-            cellPadding: { top: 1.0, bottom: 1.0, left: 5, right: 5 },
-        },
-        alternateRowStyles: {
-            fillColor: [248, 250, 252],
-        },
-        columnStyles: {
-            0: { halign: 'center', cellWidth: 20.16, textColor: [148, 163, 184] },
-            1: { halign: 'left',   cellWidth: orientation === 'landscape' ? 40 : 32 },
-        },
-        didDrawCell(data) {
-            // Body data alignment and styling
-            if (data.section === 'body' && data.column.index >= 2) {
-                data.cell.styles.textColor = [91, 95, 239];
-                data.cell.styles.fontStyle = 'bold';
-                data.cell.styles.halign    = 'right';
+        get visiblePages() {
+            const pages = [];
+            const delta = 2;
+            const left = this.currentPage - delta;
+            const right = this.currentPage + delta + 1;
+            for (let i = 1; i <= this.totalPages; i++) {
+                if (i === 1 || i === this.totalPages || (i >= left && i < right)) pages.push(i);
             }
+            return pages;
         },
-        margin: { left: 14, right: 14 },
-        tableLineColor: [226, 232, 240],
-        tableLineWidth: 0.3,
-    });
-
-    // ── 5. Footer per page ─────────────────────────────────────────
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        const yF = H - 10;
-
-        // Footer top line
-        doc.setDrawColor(226, 232, 240);
-        doc.line(14, yF - 4, W - 14, yF - 4);
-
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text('SIMONEL \u2014 Sistem Monitoring Energi Listrik', 14, yF);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(91, 95, 239);
-        doc.text(`${i} / ${pageCount}`, W - 14, yF, { align: 'right' });
+        formatDate(dateStr) {
+            if (!dateStr) return '--/--/----';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        },
+        formatDateTime(ts) {
+            const d = new Date(ts);
+            const date = d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear();
+            const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') + ':' + d.getSeconds().toString().padStart(2, '0');
+            return { date, time };
+        }
     }
-
-    const safeDateRange = dateRange.replace(/\s+/g, '_').replace(/[^a-z0-9_\-]/gi, '');
-    doc.save(`SIMONEL_Export_${safeDateRange}.pdf`);
 }
 
+function downloadPDF(btn) {
+    const textBtn = document.getElementById('textPdf');
+    const iconBtn = document.getElementById('iconPdf');
+    btn.disabled = true;
+    textBtn.innerText = 'Memproses...';
+    iconBtn.className = 'bx bx-loader-alt bx-spin text-lg';
+
+    setTimeout(() => {
+        try {
+            const { jsPDF } = window.jspdf;
+            const exportEl = document.querySelector('[x-data="exportPage()"]');
+            const alpineData = exportEl.__x ? exportEl.__x.$data : null;
+            
+            // Fallback for Alpine v3 if __x is not available
+            const allLogs = (alpineData ? alpineData.logs : window.Alpine ? Alpine.$data(exportEl).logs : []) || [];
+            
+            if (allLogs.length === 0) {
+                alert('Tidak ada data untuk diunduh.');
+                return;
+            }
+
+            const selectedFields = <?= json_encode($selectedFields); ?>;
+            const fieldMap = <?= json_encode($fieldMap); ?>;
+            const heads = ['No', 'Waktu'];
+            selectedFields.forEach(f => { if(fieldMap[f]) heads.push(`${fieldMap[f].label} (${fieldMap[f].unit})`); });
+            
+            // Force Portrait Orientation
+            const orientation = 'portrait';
+            const doc = new jsPDF({ orientation: orientation, unit: 'mm', format: 'a4' });
+            
+            const W = 210; // A4 Portrait Width
+            const H = 297; // A4 Portrait Height
+            const availableWidth = W - 28; // 14mm margins
+
+            const deviceName = document.querySelector('#pdfDeviceName')?.textContent?.trim() || '-';
+            const dateRange  = document.querySelector('#pdfDateRange')?.textContent?.trim()  || '-';
+            const genDate    = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+            // ── 1. Header ──────────────────────────────────────────────
+            doc.setFillColor(15, 23, 42); doc.rect(0, 0, W, 42, 'F');
+            doc.setFillColor(91, 95, 239); doc.rect(0, 42, W, 3, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont('helvetica', 'bold');
+            doc.text('SIMONEL', 14, 20);
+            doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
+            doc.text('Sistem Monitoring Energi Listrik', 14, 28);
+            doc.setFontSize(8); doc.setTextColor(99, 102, 241); doc.setFont('helvetica', 'bold');
+            doc.text('LAPORAN DATA SENSOR', W - 14, 18, { align: 'right' });
+            doc.text(genDate, W - 14, 25, { align: 'right' });
+
+            // ── 2. Info card ───────────────────────────────────────────
+            doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240);
+            doc.roundedRect(14, 50, W - 28, 30, 3, 3, 'FD');
+            doc.setFontSize(7); doc.setTextColor(148, 163, 184);
+            doc.text('PERANGKAT', 20, 58); doc.text('PERIODE', 20, 68); doc.text('TOTAL DATA', 20, 78);
+            doc.setFontSize(8.5); doc.setTextColor(15, 23, 42); doc.setFont('helvetica', 'bold');
+            doc.text(deviceName, 58, 58);
+            doc.setFont('helvetica', 'normal'); doc.text(dateRange, 58, 68);
+            doc.text(allLogs.length + ' baris', 58, 78);
+
+            const rows = allLogs.map((row, i) => {
+                const d = new Date(row.created_at);
+                const ds = d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear();
+                const ts = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+                const line = [i + 1, `${ds} ${ts}`];
+                selectedFields.forEach(f => line.push(Number(row[f] || 0).toFixed(2)));
+                return line;
+            });
+
+            // Compact widths for Portrait
+            const noWidth = 10;
+            const timeWidth = 32;
+            const metricWidth = (availableWidth - noWidth - timeWidth) / selectedFields.length;
+
+            const colStyles = {
+                0: { halign: 'center', cellWidth: noWidth },
+                1: { cellWidth: timeWidth }
+            };
+            for(let i=2; i < heads.length; i++) {
+                colStyles[i] = { halign: 'right', cellWidth: metricWidth };
+            }
+
+            doc.autoTable({
+                head: [heads],
+                body: rows,
+                startY: 86,
+                styles: { 
+                    font: 'helvetica',
+                    fontSize: 6.5, // Slightly smaller to ensure fit
+                    cellPadding: 2,
+                    overflow: 'linebreak'
+                },
+                headStyles: { 
+                    fillColor: [15, 23, 42], 
+                    halign: 'center',
+                    valign: 'middle'
+                },
+                columnStyles: colStyles,
+                didDrawCell(data) {
+                    if (data.section === 'body' && data.column.index >= 2) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.textColor = [91, 95, 239];
+                    }
+                },
+                margin: { left: 14, right: 14 }
+            });
+
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(7); doc.setTextColor(148, 163, 184);
+                doc.text(`SIMONEL — Halaman ${i} dari ${pageCount}`, 14, H - 10);
+            }
+
+            doc.save(`SIMONEL_Report_${deviceName.replace(/\s+/g,'_')}.pdf`);
+        } catch (e) {
+            console.error(e);
+            alert('Terjadi kesalahan saat membuat PDF.');
+        } finally {
+            btn.disabled = false;
+            textBtn.innerText = 'PDF';
+            iconBtn.className = 'bx bxs-file-pdf text-lg';
+        }
+    }, 200);
+}
 </script>
