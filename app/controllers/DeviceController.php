@@ -1,12 +1,7 @@
 <?php
-
 class DeviceController extends Controller {
     public function __construct() {
-        if (!isset($_SESSION['user'])) {
-            header('Location: ' . BASEURL . '/auth');
-            exit;
-        }
-        
+    }
         // Role check: Only admin can access device settings
         if ($_SESSION['user']['role'] !== 'admin') {
             header('Location: ' . BASEURL . '/dashboard');

@@ -2,11 +2,6 @@
 
 class UserController extends Controller {
     public function __construct() {
-        if (!isset($_SESSION['user'])) {
-            header('Location: ' . BASEURL . '/auth');
-            exit;
-        }
-
         // Only Admin can access User Management
         if ($_SESSION['user']['role'] !== 'admin') {
             header('Location: ' . BASEURL . '/dashboard');
