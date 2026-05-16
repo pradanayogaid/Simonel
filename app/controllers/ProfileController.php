@@ -20,6 +20,12 @@ class ProfileController extends Controller {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/profile');
+                exit;
+            }
+
             $userModel = $this->model('User');
             $id = $_SESSION['user']['id'];
             $name = $_POST['name'];
@@ -40,6 +46,12 @@ class ProfileController extends Controller {
 
     public function password() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/profile');
+                exit;
+            }
+
             $userModel = $this->model('User');
             $id = $_SESSION['user']['id'];
             $current_password = $_POST['current_password'];

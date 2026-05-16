@@ -33,6 +33,7 @@ $today          = date('Y-m-d');
         </h2>
 
         <form method="POST" action="<?= BASEURL; ?>/export/generate" id="exportForm">
+            <?= csrf_field(); ?>
             <input type="hidden" name="format" value="preview">
 
             <!-- Row 1: Device + Date Range -->
@@ -159,6 +160,7 @@ $today          = date('Y-m-d');
                     <span id="textPdf">PDF</span>
                 </button>
                 <form method="POST" action="<?= BASEURL; ?>/export/generate" class="inline">
+                    <?= csrf_field(); ?>
                     <input type="hidden" name="device_id" value="<?= htmlspecialchars($device['id']); ?>">
                     <input type="hidden" name="date_from" value="<?= htmlspecialchars($date_from); ?>">
                     <input type="hidden" name="date_to"   value="<?= htmlspecialchars($date_to); ?>">

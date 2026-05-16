@@ -1,7 +1,6 @@
 <?php
 class DeviceController extends Controller {
     public function __construct() {
-    }
         // Role check: Only admin can access device settings
         if ($_SESSION['user']['role'] !== 'admin') {
             header('Location: ' . BASEURL . '/dashboard');
@@ -22,6 +21,12 @@ class DeviceController extends Controller {
 
     public function add() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/device');
+                exit;
+            }
+
             $deviceModel = $this->model('Device');
             
             $data = [
@@ -49,6 +54,12 @@ class DeviceController extends Controller {
         $deviceModel = $this->model('Device');
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/device');
+                exit;
+            }
+
             $data = [
                 'id' => $id,
                 'device_name' => $_POST['device_name'],
@@ -72,6 +83,12 @@ class DeviceController extends Controller {
     }
 
     public function delete($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verify_csrf_token()) {
+            $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+            header('Location: ' . BASEURL . '/device');
+            exit;
+        }
+
         $deviceModel = $this->model('Device');
         if ($deviceModel->deleteDevice($id) > 0) {
             header('Location: ' . BASEURL . '/device');

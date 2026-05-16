@@ -21,6 +21,12 @@ class AuthController extends Controller {
 
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/auth');
+                exit;
+            }
+
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
 
@@ -71,6 +77,12 @@ class AuthController extends Controller {
 
     public function processRegister() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/auth/register');
+                exit;
+            }
+
             $name = $_POST['name'] ?? '';
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';

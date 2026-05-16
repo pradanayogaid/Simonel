@@ -10,6 +10,7 @@
 
         <div class="bg-white rounded-[40px] p-8 shadow-sm border border-gray-50">
             <form action="<?= BASEURL; ?>/user/add" method="POST" class="space-y-6">
+                <?= csrf_field(); ?>
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-2">Nama Lengkap</label>
                         <input type="text" name="name" required placeholder="Contoh: Ahmad Dani" 

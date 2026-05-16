@@ -2,6 +2,8 @@
 
 class ApiController extends Controller {
     public function send() {
+        header('Content-Type: application/json; charset=utf-8');
+
         // 1. Cek Method
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
@@ -61,6 +63,8 @@ class ApiController extends Controller {
     }
 
     public function fetch() {
+        header('Content-Type: application/json; charset=utf-8');
+
         $api_key = $_GET['api_key'] ?? '';
 
         if (empty($api_key)) {
@@ -83,7 +87,7 @@ class ApiController extends Controller {
         $stats = $logModel->getDailyStats($device['device_code']);
 
         if (!$latestLog) {
-            // No data within 24 hours — return zeroed values
+            // No data today — return zeroed values
             echo json_encode([
                 'status' => 'success',
                 'device_code' => $device['device_code'],
@@ -130,6 +134,8 @@ class ApiController extends Controller {
         ]);
     }
     public function history() {
+        header('Content-Type: application/json; charset=utf-8');
+
         $api_key = $_GET['api_key'] ?? '';
 
         if (empty($api_key)) {

@@ -28,7 +28,7 @@
                         <td class="px-8 py-5">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-indigo-50 text-[#5B5FEF] flex items-center justify-center font-bold">
-                                    <?= substr($user['name'], 0, 1); ?>
+                                    <?= e(substr($user['name'], 0, 1)); ?>
                                 </div>
                                 <div class="text-sm font-bold text-gray-700"><?= htmlspecialchars($user['name']); ?></div>
                             </div>
@@ -38,7 +38,7 @@
                         </td>
                         <td class="px-8 py-5">
                             <span class="px-3 py-1 rounded-full text-[10px] font-black <?= $user['role'] == 'admin' ? 'bg-purple-50 text-purple-500' : 'bg-blue-50 text-blue-500'; ?> uppercase">
-                                <?= $user['role']; ?>
+                                <?= e($user['role']); ?>
                             </span>
                         </td>
                         <td class="px-8 py-5 text-xs text-gray-400 font-medium">
@@ -46,11 +46,11 @@
                         </td>
                         <td class="px-8 py-5">
                             <div class="flex gap-2">
-                                <a href="<?= BASEURL; ?>/user/edit/<?= $user['id']; ?>" class="p-2 text-gray-400 hover:text-[#5B5FEF] transition-colors">
+                                <a href="<?= BASEURL; ?>/user/edit/<?= e($user['id']); ?>" class="p-2 text-gray-400 hover:text-[#5B5FEF] transition-colors">
                                     <i class='bx bxs-edit text-xl'></i>
                                 </a>
                                 <?php if ($user['id'] != $_SESSION['user']['id']) : ?>
-                                <button onclick="confirmDelete('<?= BASEURL; ?>/user/delete/<?= $user['id']; ?>', '<?= $user['name']; ?>')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                <button onclick="confirmDelete('<?= BASEURL; ?>/user/delete/<?= e($user['id']); ?>', <?= js($user['name']); ?>)" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
                                     <i class='bx bxs-trash text-xl'></i>
                                 </button>
                                 <?php endif; ?>
@@ -82,7 +82,12 @@ function confirmDelete(url, name) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = url;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            form.innerHTML = `<?= csrf_field(); ?>`;
+            document.body.appendChild(form);
+            form.submit();
         }
     })
 }

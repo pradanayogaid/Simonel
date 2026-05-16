@@ -7,7 +7,8 @@
     </div>
 
     <div class="max-w-2xl bg-white rounded-3xl shadow-sm p-8 border border-gray-100">
-        <form action="<?= BASEURL; ?>/device/edit/<?= $data['device']['id']; ?>" method="POST">
+        <form action="<?= BASEURL; ?>/device/edit/<?= e($data['device']['id']); ?>" method="POST">
+            <?= csrf_field(); ?>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-2">Device Code (Read-only)</label>
@@ -35,8 +36,8 @@
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">API Key</label>
                 <div class="flex gap-2">
-                    <input type="text" class="block w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50 text-gray-500 font-mono text-sm" value="<?= $data['device']['api_key']; ?>" readonly>
-                    <button type="button" onclick="navigator.clipboard.writeText('<?= $data['device']['api_key']; ?>'); showToast('Copied to clipboard!', 'success')" class="px-4 py-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                    <input type="text" class="block w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50 text-gray-500 font-mono text-sm" value="<?= e($data['device']['api_key']); ?>" readonly>
+                    <button type="button" onclick="navigator.clipboard.writeText(<?= js($data['device']['api_key']); ?>); showToast('Copied to clipboard!', 'success')" class="px-4 py-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
                         <i class='bx bx-copy'></i>
                     </button>
                 </div>

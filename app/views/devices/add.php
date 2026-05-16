@@ -8,6 +8,7 @@
 
     <div class="max-w-2xl bg-white rounded-3xl shadow-sm p-8 border border-gray-100">
         <form action="<?= BASEURL; ?>/device/add" method="POST">
+            <?= csrf_field(); ?>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="device_code" class="block text-sm font-medium text-gray-700 mb-2">Device Code (Unique ID)</label>

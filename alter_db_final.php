@@ -1,27 +1,40 @@
 <?php
-require_once 'app/core/Database.php';
 require_once 'config/config.php';
+require_once 'app/core/Database.php';
 
 $db = new Database();
 
+function columnExists($db, $column) {
+    $db->query("SHOW COLUMNS FROM sensor_logs LIKE :column");
+    $db->bind(':column', $column);
+    return (bool) $db->single();
+}
+
+function runAlter($db, $sql) {
+    $db->query($sql);
+    $db->execute();
+}
+
 try {
-    // Step 1: Rename power to temp
-    $db->query("ALTER TABLE sensor_logs CHANGE power power_temp FLOAT");
-    $db->execute();
+    if (columnExists($db, 'power') && !columnExists($db, 'daya_semu')) {
+        runAlter($db, "ALTER TABLE sensor_logs CHANGE power daya_semu FLOAT DEFAULT 0");
+    }
 
-    // Step 2: Rename apparent_power to power (Now this becomes Daya Nyata)
-    $db->query("ALTER TABLE sensor_logs CHANGE apparent_power power FLOAT");
-    $db->execute();
+    if (columnExists($db, 'apparent_power') && !columnExists($db, 'daya_nyata')) {
+        runAlter($db, "ALTER TABLE sensor_logs CHANGE apparent_power daya_nyata FLOAT DEFAULT 0");
+    }
 
-    // Step 3: Rename temp to apparent_power (Now this becomes Daya Semu)
-    $db->query("ALTER TABLE sensor_logs CHANGE power_temp apparent_power FLOAT");
-    $db->execute();
+    if (columnExists($db, 'reactive_power') && !columnExists($db, 'daya_reaktif')) {
+        runAlter($db, "ALTER TABLE sensor_logs CHANGE reactive_power daya_reaktif FLOAT DEFAULT 0");
+    }
 
-    // Step 4: Drop other columns
-    $db->query("ALTER TABLE sensor_logs DROP COLUMN energy, DROP COLUMN frequency, DROP COLUMN pf");
-    $db->execute();
+    foreach (['energy', 'frequency', 'pf'] as $column) {
+        if (columnExists($db, $column)) {
+            runAlter($db, "ALTER TABLE sensor_logs DROP COLUMN {$column}");
+        }
+    }
 
-    echo "Database schema updated successfully!\n";
+    echo "Database schema is aligned with SIMONEL daya_* columns.\n";
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
+    echo "Error: " . $e->getMessage() . "\n";
 }

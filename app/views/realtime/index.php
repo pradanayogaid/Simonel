@@ -60,11 +60,21 @@
                 <div class="w-2.5 h-2.5 rounded-full" :class="isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></div>
                 <span class="hidden sm:inline" x-text="isConnected ? 'ONLINE' : 'OFFLINE'"></span>
             </div>
+
+            <!-- Manual Refresh Button (Only shown when Offline) -->
+            <button x-show="!isConnected && !selectedDate"
+                    @click="manualRefresh()"
+                    :disabled="isRefreshing"
+                    class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-xs font-bold text-gray-500 hover:text-[#5B5FEF] hover:border-[#5B5FEF] transition-all disabled:opacity-50">
+                <i class='bx bx-refresh text-lg' :class="isRefreshing ? 'animate-spin' : ''"></i>
+                <span x-text="isRefreshing ? 'Mengecek...' : 'Refresh'"></span>
+            </button>
+
             <div class="hidden md:flex items-center gap-2 text-xs sm:text-sm text-gray-400 font-medium">
-                <i class='bx bx-time-five text-[#5B5FEF] text-lg lg:hidden' x-show="lastUpdate !== 'Tidak ada data dalam 24 jam terakhir'"></i>
+                <i class='bx bx-time-five text-[#5B5FEF] text-lg lg:hidden' x-show="lastUpdate !== 'Belum ada data masuk hari ini'"></i>
                 <span class="hidden md:inline">Updated :</span>
                 <span x-text="lastUpdate" 
-                      :class="lastUpdate === 'Tidak ada data dalam 24 jam terakhir' ? 'hidden md:inline' : 'inline'"
+                      :class="lastUpdate === 'Belum ada data masuk hari ini' ? 'hidden md:inline' : 'inline'"
                       class="font-bold sm:font-medium">Menunggu...</span>
             </div>
         </div>
@@ -300,6 +310,7 @@
                 apiKey: '<?= $data["selected_device"]["api_key"]; ?>',
                 apiUrl: '<?= BASEURL; ?>/api/fetch',
                 isConnected: false,
+                isRefreshing: false,
                 lastUpdate: '-',
                 pollingInterval: null,
                 sensorData: {
@@ -323,11 +334,26 @@
                         this.initCharts();
                         this.loadHistory();
                         this.fetchData();
-                        // Poll every 5 seconds
-                        this.pollingInterval = setInterval(() => {
-                            this.fetchData();
-                        }, 5000);
+                        this.startPolling();
                     });
+                },
+                startPolling() {
+                    if (this.pollingInterval) return;
+                    this.pollingInterval = setInterval(() => {
+                        this.fetchData();
+                    }, 5000);
+                },
+                stopPolling() {
+                    if (this.pollingInterval) {
+                        clearInterval(this.pollingInterval);
+                        this.pollingInterval = null;
+                    }
+                },
+                async manualRefresh() {
+                    this.isRefreshing = true;
+                    await this.fetchData();
+                    // Slight delay to show the animation
+                    setTimeout(() => { this.isRefreshing = false; }, 500);
                 },
                 async loadHistory(date = null) {
                     try {
@@ -381,20 +407,13 @@
                     }
                 },
                 onDateChange() {
-                    if (this.pollingInterval) {
-                        clearInterval(this.pollingInterval);
-                        this.pollingInterval = null;
-                    }
+                    this.stopPolling();
                     this.loadHistory(this.selectedDate);
                 },
                 resetToLive() {
                     this.selectedDate = '';
                     this.loadHistory();
-                    if (!this.pollingInterval) {
-                        this.pollingInterval = setInterval(() => {
-                            this.fetchData();
-                        }, 5000);
-                    }
+                    this.startPolling();
                 },
                 formatDateLabel(dateStr) {
                     if (!dateStr) return '';
@@ -508,6 +527,13 @@
                             // Status is calculated from server side threshold
                             this.isConnected = (result.device_status === 'ONLINE');
                             
+                            // Polling logic: stop if offline, start if online
+                            if (!this.isConnected) {
+                                this.stopPolling();
+                            } else if (this.isConnected && !this.selectedDate) {
+                                this.startPolling();
+                            }
+
                             // Format timestamp nicely
                             if (result.data.last_update) {
                                 const date = new Date(result.data.last_update);
@@ -529,17 +555,19 @@
 
                                 this.lastUpdate = `${jam}.${menit} ${tzLabel} - ${hari} ${bulan} ${tahun}`;
                             } else {
-                                this.lastUpdate = 'Tidak ada data dalam 24 jam terakhir';
+                                this.lastUpdate = 'Belum ada data masuk hari ini';
                             }
                             
                             // Update Charts
                             this.updateAllCharts(result.data, result.data.last_update);
                         } else {
                             this.isConnected = false;
+                            this.stopPolling();
                         }
                     } catch (error) {
                         console.error("Fetch error:", error);
                         this.isConnected = false;
+                        this.stopPolling();
                     }
                 },
                 changeDevice(deviceId) {

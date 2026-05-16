@@ -22,6 +22,12 @@ class ExportController extends Controller {
             exit;
         }
 
+        if (!verify_csrf_token()) {
+            $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+            header('Location: ' . BASEURL . '/export');
+            exit;
+        }
+
         $deviceModel = $this->model('Device');
         $logModel    = $this->model('Log');
 

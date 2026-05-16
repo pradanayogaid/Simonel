@@ -27,8 +27,8 @@ class Log {
     }
 
     public function getLatestLog($device_code) {
-        // Only return latest data if it's within the last 24 hours
-        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE device_id = :device_id AND created_at >= NOW() - INTERVAL 24 HOUR ORDER BY created_at DESC LIMIT 1');
+        // Only return latest data if it's from today
+        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE device_id = :device_id AND DATE(created_at) = CURDATE() ORDER BY created_at DESC LIMIT 1');
         $this->db->bind(':device_id', $device_code);
         return $this->db->single();
     }
@@ -42,10 +42,10 @@ class Log {
     }
 
     public function getDailyStats($device_code, $date = null) {
-        // Get average, min, max — filtered by specific date or last 24 hours
+        // Get average, min, max — filtered by specific date or today
         $dateFilter = $date 
             ? "DATE(created_at) = :date" 
-            : "created_at >= NOW() - INTERVAL 24 HOUR";
+            : "DATE(created_at) = CURDATE()";
 
         $query = "SELECT 
                     AVG(voltage) as avg_voltage, MIN(voltage) as min_voltage, MAX(voltage) as max_voltage,
@@ -72,7 +72,7 @@ class Log {
     }
 
     public function getChartHistory($device_code, $limit = 60, $date = null) {
-        // If date given, fetch all records for that day; otherwise last 24h
+        // If date given, fetch all records for that day; otherwise today
         if ($date) {
             $query = "SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
                       FROM " . $this->table . "
@@ -84,12 +84,12 @@ class Log {
             $this->db->bind(':date', $date);
             $this->db->bind(':limit', $limit);
         } else {
-            // Default: last 24 hours, newest-first limited, then ordered ascending
+            // Default: today only, newest-first limited, then ordered ascending
             $query = "SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
                       FROM (
                           SELECT voltage, current, daya_nyata, daya_semu, daya_reaktif, created_at
                           FROM " . $this->table . "
-                          WHERE device_id = :device_id AND created_at >= NOW() - INTERVAL 24 HOUR
+                          WHERE device_id = :device_id AND DATE(created_at) = CURDATE()
                           ORDER BY created_at DESC
                           LIMIT :limit
                       ) sub
@@ -117,6 +117,31 @@ class Log {
                         WHERE id IN (SELECT MAX(id) FROM " . $this->table . " GROUP BY device_id)) as latest_logs";
         $this->db->query($query);
         return $this->db->single()['total_power'] ?? 0;
+    }
+
+    public function getSystemEfficiency() {
+        // Calculate efficiency: (Total Active Power / Total Apparent Power) * 100
+        $query = "SELECT
+                    SUM(daya_nyata) as total_nyata,
+                    SUM(daya_semu) as total_semu
+                  FROM (
+                    SELECT daya_nyata, daya_semu FROM " . $this->table . "
+                    WHERE id IN (SELECT MAX(id) FROM " . $this->table . " GROUP BY device_id)
+                  ) as latest_data";
+        $this->db->query($query);
+        $res = $this->db->single();
+
+        if (!$res || $res['total_semu'] == 0) return 0;
+
+        $efficiency = ($res['total_nyata'] / $res['total_semu']) * 100;
+        return round(min($efficiency, 100), 1); // Max 100%
+    }
+
+    public function getDailyPeakPower() {
+        // Max Daya Nyata (W) recorded TODAY
+        $query = "SELECT MAX(daya_nyata) as peak_power FROM " . $this->table . " WHERE DATE(created_at) = CURDATE()";
+        $this->db->query($query);
+        return $this->db->single()['peak_power'] ?? 0;
     }
 
     public function getAllLogs($limit = null, $search = null) {

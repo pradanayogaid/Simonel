@@ -36,6 +36,7 @@ class Device {
                       SELECT device_id, MAX(created_at) as last_data 
                       FROM sensor_logs 
                       WHERE device_id = (SELECT device_code FROM devices WHERE id = :id)
+                      GROUP BY device_id
                   ) l ON d.device_code = l.device_id
                   WHERE d.id = :id";
         $this->db->query($query);
@@ -94,6 +95,15 @@ class Device {
     }
 
     public function deleteDevice($id) {
+        $device = $this->getDeviceById($id);
+        if (!$device) {
+            return 0;
+        }
+
+        $this->db->query('DELETE FROM sensor_logs WHERE device_id = :device_id');
+        $this->db->bind(':device_id', $device['device_code']);
+        $this->db->execute();
+
         $this->db->query('DELETE FROM ' . $this->table . ' WHERE id = :id');
         $this->db->bind(':id', $id);
         $this->db->execute();

@@ -62,12 +62,12 @@
 
         // Auto-show session messages as toasts
         <?php if (!empty($_SESSION['success'])) : ?>
-            showToast("<?= $_SESSION['success']; ?>", "success");
+            showToast(<?= js($_SESSION['success']); ?>, "success");
             <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
 
         <?php if (!empty($_SESSION['error'])) : ?>
-            showToast("<?= $_SESSION['error']; ?>", "error");
+            showToast(<?= js($_SESSION['error']); ?>, "error");
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
     </script>

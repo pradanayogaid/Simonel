@@ -102,16 +102,16 @@
                     <p class="text-xs font-bold text-[#5B5FEF] uppercase tracking-widest mb-1">Efisiensi Sistem</p>
                     <div class="flex items-center gap-3">
                         <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-[#5B5FEF]" style="width: 92%"></div>
+                            <div class="h-full bg-[#5B5FEF]" style="width: <?= $data['stats']['system_efficiency']; ?>%"></div>
                         </div>
-                        <span class="text-sm font-black text-[#5B5FEF]">92%</span>
+                        <span class="text-sm font-black text-[#5B5FEF]"><?= $data['stats']['system_efficiency']; ?>%</span>
                     </div>
                 </div>
 
                 <div class="p-5 border border-dashed border-gray-200 rounded-3xl">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Beban Puncak</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Beban Puncak Hari Ini</p>
                     <div class="flex items-baseline gap-1">
-                        <h4 class="text-xl font-black text-gray-700"><?= number_format($data['stats']['total_power'] * 1.2, 1); ?></h4>
+                        <h4 class="text-xl font-black text-gray-700"><?= number_format($data['stats']['daily_peak_power'], 1); ?></h4>
                         <span class="text-sm font-bold text-gray-400">W</span>
                     </div>
                 </div>

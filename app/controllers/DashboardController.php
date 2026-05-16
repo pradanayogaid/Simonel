@@ -16,7 +16,9 @@ class DashboardController extends Controller {
             'total_devices' => $deviceModel->countDevices(),
             'online_devices' => $deviceModel->getStatusCount('ONLINE'),
             'total_power' => $logModel->getTotalPower(),
-            'total_power_apparent' => $logModel->getTotalApparentPower()
+            'total_power_apparent' => $logModel->getTotalApparentPower(),
+            'system_efficiency' => $logModel->getSystemEfficiency(),
+            'daily_peak_power' => $logModel->getDailyPeakPower()
         ];
 
         // New data for enhanced dashboard

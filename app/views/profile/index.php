@@ -6,13 +6,13 @@
 
     <?php if (!empty($data['success'])) : ?>
         <div class="bg-green-50 text-green-600 p-4 rounded-2xl mb-6 text-sm font-medium">
-            <i class='bx bx-check-circle mr-1'></i> <?= $data['success']; ?>
+            <i class='bx bx-check-circle mr-1'></i> <?= e($data['success']); ?>
         </div>
     <?php endif; ?>
 
     <?php if (!empty($data['error'])) : ?>
         <div class="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 text-sm font-medium">
-            <i class='bx bx-error-circle mr-1'></i> <?= $data['error']; ?>
+            <i class='bx bx-error-circle mr-1'></i> <?= e($data['error']); ?>
         </div>
     <?php endif; ?>
 
@@ -24,6 +24,7 @@
                     <i class='bx bx-user-circle text-[#5B5FEF]'></i> Profile Information
                 </h2>
                 <form action="<?= BASEURL; ?>/profile/update" method="POST">
+                    <?= csrf_field(); ?>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
@@ -36,7 +37,7 @@
                     </div>
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-400 mb-2">Role</label>
-                        <input type="text" class="block w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed uppercase font-bold text-xs" value="<?= $data['user']['role']; ?>" readonly>
+                        <input type="text" class="block w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed uppercase font-bold text-xs" value="<?= e($data['user']['role']); ?>" readonly>
                     </div>
                     <button type="submit" class="bg-[#5B5FEF] text-white px-8 py-3 rounded-full font-bold hover:bg-[#4a4ed8] transition-colors">Save Changes</button>
                 </form>
@@ -48,6 +49,7 @@
                     <i class='bx bx-lock-alt text-[#5B5FEF]'></i> Change Password
                 </h2>
                 <form action="<?= BASEURL; ?>/profile/password" method="POST">
+                    <?= csrf_field(); ?>
                     <div class="mb-6">
                         <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
                         <div class="relative" x-data="{ show: false }">
@@ -90,7 +92,7 @@
                     <h3 class="text-2xl font-bold mb-4"><?= htmlspecialchars($data['user']['name']); ?></h3>
                     <div class="space-y-2 text-sm text-indigo-50 mb-8">
                         <p class="flex items-center gap-2"><i class='bx bx-envelope'></i> <?= htmlspecialchars($data['user']['email']); ?></p>
-                        <p class="flex items-center gap-2"><i class='bx bx-shield-quarter'></i> <?= strtoupper($data['user']['role']); ?></p>
+                        <p class="flex items-center gap-2"><i class='bx bx-shield-quarter'></i> <?= e(strtoupper($data['user']['role'])); ?></p>
                         <p class="flex items-center gap-2"><i class='bx bx-calendar'></i> Member since <?= date('M Y', strtotime($data['user']['created_at'])); ?></p>
                     </div>
 

@@ -22,6 +22,12 @@ class UserController extends Controller {
 
     public function add() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/user');
+                exit;
+            }
+
             $userModel = $this->model('User');
             
             // Force role to 'user' for safety if needed, 
@@ -60,6 +66,12 @@ class UserController extends Controller {
         }
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!verify_csrf_token()) {
+                $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+                header('Location: ' . BASEURL . '/user');
+                exit;
+            }
+
             $data = [
                 'id' => $id,
                 'name' => $_POST['name'],
@@ -87,6 +99,12 @@ class UserController extends Controller {
     }
 
     public function delete($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verify_csrf_token()) {
+            $_SESSION['error'] = 'Sesi form tidak valid. Silakan coba lagi.';
+            header('Location: ' . BASEURL . '/user');
+            exit;
+        }
+
         $userModel = $this->model('User');
         $targetUser = $userModel->getUserById($id);
 

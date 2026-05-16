@@ -52,6 +52,7 @@
                     </div>
 
                     <form action="<?= BASEURL; ?>/device/add" method="POST">
+                        <?= csrf_field(); ?>
                         <div class="space-y-5">
                             <div>
                                 <label for="device_code" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Device Code (Unique ID)</label>
@@ -112,37 +113,37 @@
                                             <i class='bx bxs-chip'></i>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-bold text-gray-700"><?= htmlspecialchars($device['device_name']); ?></div>
-                                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5"><?= htmlspecialchars($device['device_code']); ?></div>
+                                            <div class="text-sm font-bold text-gray-700"><?= e($device['device_name']); ?></div>
+                                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5"><?= e($device['device_code']); ?></div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-8 py-5">
                                     <div class="flex items-center gap-1.5 text-sm text-gray-500 font-medium">
                                         <i class='bx bx-map-pin text-gray-300 text-lg'></i>
-                                        <?= htmlspecialchars($device['location']); ?>
+                                        <?= e($device['location']); ?>
                                     </div>
                                 </td>
                                 <td class="px-8 py-5">
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $device['status'] == 'ONLINE' ? 'bg-green-50 text-green-500' : 'bg-gray-100 text-gray-400'; ?>">
                                         <span class="w-1.5 h-1.5 rounded-full <?= $device['status'] == 'ONLINE' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'; ?>"></span>
-                                        <?= $device['status']; ?>
+                                        <?= e($device['status']); ?>
                                     </span>
                                 </td>
                                 <td class="px-8 py-5">
                                     <div class="flex items-center gap-3">
-                                        <code class="text-[11px] bg-gray-50 px-2 py-1 rounded text-gray-400 font-mono">••••<?= substr($device['api_key'], -6); ?></code>
-                                        <button onclick="copyToClipboard('<?= $device['api_key']; ?>', 'API Key berhasil disalin!')" class="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center text-gray-400 hover:text-[#5B5FEF] hover:border-[#5B5FEF] transition-all" title="Copy API Key">
+                                        <code class="text-[11px] bg-gray-50 px-2 py-1 rounded text-gray-400 font-mono">••••<?= e(substr($device['api_key'], -6)); ?></code>
+                                        <button onclick="copyToClipboard(<?= js($device['api_key']); ?>, 'API Key berhasil disalin!')" class="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center text-gray-400 hover:text-[#5B5FEF] hover:border-[#5B5FEF] transition-all" title="Copy API Key">
                                             <i class='bx bx-copy'></i>
                                         </button>
                                     </div>
                                 </td>
                                 <td class="px-8 py-5">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="<?= BASEURL; ?>/device/edit/<?= $device['id']; ?>" class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all">
+                                        <a href="<?= BASEURL; ?>/device/edit/<?= e($device['id']); ?>" class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all">
                                             <i class='bx bx-edit-alt text-lg'></i>
                                         </a>
-                                        <button onclick="confirmDeleteDevice('<?= BASEURL; ?>/device/delete/<?= $device['id']; ?>', '<?= $device['device_name']; ?>')" class="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                        <button onclick="confirmDeleteDevice('<?= BASEURL; ?>/device/delete/<?= e($device['id']); ?>', <?= js($device['device_name']); ?>)" class="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
                                             <i class='bx bx-trash text-lg'></i>
                                         </button>
                                     </div>
@@ -278,7 +279,12 @@ function confirmDeleteDevice(url, name) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = url;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            form.innerHTML = `<?= csrf_field(); ?>`;
+            document.body.appendChild(form);
+            form.submit();
         }
     })
 }

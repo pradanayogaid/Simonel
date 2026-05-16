@@ -12,6 +12,7 @@
         <?php endif; ?>
 
         <form action="<?= BASEURL; ?>/auth/login" method="POST">
+            <?= csrf_field(); ?>
             <div class="mb-5">
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                 <div class="relative">

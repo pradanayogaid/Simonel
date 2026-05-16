@@ -12,6 +12,7 @@
         <?php endif; ?>
 
         <form action="<?= BASEURL; ?>/auth/processRegister" method="POST">
+            <?= csrf_field(); ?>
             <div class="mb-5">
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
                 <div class="relative">

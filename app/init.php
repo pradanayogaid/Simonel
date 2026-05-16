@@ -5,6 +5,31 @@ require_once '../config/config.php';
 // --- Session Security Logic ---
 if (!session_id()) session_start();
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+function e($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+function js($value) {
+    return htmlspecialchars(json_encode($value, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+}
+
+function csrf_token() {
+    return $_SESSION['csrf_token'] ?? '';
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+}
+
+function verify_csrf_token() {
+    $token = $_POST['csrf_token'] ?? '';
+    return is_string($token) && hash_equals(csrf_token(), $token);
+}
+
 // 1. Auto-Logout Logic (30 Minutes Timeout)
 $timeout_duration = 1800; // 30 minutes in seconds
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout_duration)) {
